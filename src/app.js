@@ -220,7 +220,7 @@ io.on("connect", (socket) => {
           roomList.get(socket.room_id).getPeers().get(socket.id).name
         }`,
         producer_id: `${producerId}`,
-        consumer_id: `${params.id}`,
+  //      consumer_id: `${params.id}`,
       });
 
       callback(params);
