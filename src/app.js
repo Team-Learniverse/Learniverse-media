@@ -146,6 +146,19 @@ io.on("connect", (socket) => {
   });
 
 
+  //채팅
+  socket.on("message", (data) => {
+    if (!roomList.has(socket.room_id)) return;
+    console.log("chatting", data);
+    const today = new Date();
+    data = {
+      name: socket.name,
+      message: data,
+      time: today.toLocaleTimeString(),
+    };
+    roomList.get(socket.room_id).broadCast(socket.id, "message", data);
+  });
+
   socket.on("getRouterRtpCapabilities", (_, callback) => {
     console.log("Get RouterRtpCapabilities", {
       name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
