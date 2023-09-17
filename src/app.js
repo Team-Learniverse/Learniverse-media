@@ -1,23 +1,29 @@
-// const express = require("express");
-
-// const app = express();
-// const https = require("httpolyglot");
-// const fs = require("fs");
-// const mediasoup = require("mediasoup");
-// const config = require("./config");
-// const path = require("path");
-// const Room = require("./Room");
-// const Peer = require("./Peer");
 import express from "express";
 const app = express();
 import https from "httpolyglot";
 import fs from "fs";
 import mediasoup from "mediasoup";
 import config from "./config.js";
-import path from "path";
 import Room from "./Room.js";
 import Peer from "./Peer.js";
 import Server from "socket.io";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const createPresignedUrlWithClient = ({ region, bucket, key }) => {
+  const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, fileName } = config;
+
+  const client = new S3Client({
+    region: "us-east-2",
+    credentials: {
+      accessKeyId: s3AccessKeyId,
+      secretAccessKey: s3SecretAccessKey,
+    },
+  });
+
+  const command = new PutObjectCommand({ Bucket: bucket, Key: key });
+  return getSignedUrl(client, command, { expiresIn: 3600 });
+};
 
 const options = {
   key: fs.readFileSync("ssl/key.pem"),
@@ -28,34 +34,26 @@ const httpsServer = https.createServer(options, app);
 app.get("/test", (req, res) => {
   res.send("ok");
 });
+app.get("/presigned-url", async (req, res) => {
+  const { s3SecretAccessKey, s3BucketName } = config;
+  const clientUrl = await createPresignedUrlWithClient({
+    region: "us-east-2",
+    bucket: s3BucketName,
+    key: s3SecretAccessKey,
+  });
+
+  res.send(clientUrl);
+});
+
 httpsServer.listen(config.listenPort, () => {
   console.log(
     "✅ Listening on https://" + config.listenIp + ":" + config.listenPort
   );
 });
-
 // all mediasoup workers
 let workers = [];
 let nextMediasoupWorkerIdx = 0;
 
-/**
- * roomList
- * {
- *  room_id: Room {
- *      id:
- *      router:
- *      peers: {
- *          id:,
- *          name:,
- *          master: [boolean],
- *          transports: [Map],
- *          producers: [Map],
- *          consumers: [Map],
- *          rtpCapabilities:
- *      }
- *  }
- * }
- */
 let roomList = new Map();
 
 (async () => {
@@ -118,6 +116,7 @@ io.on("connect", (socket) => {
 
     roomList.get(room_id).addPeer(new Peer(socket.id, name));
     socket.room_id = room_id;
+    socket.name = name;
 
     cb(roomList.get(room_id).toJson());
   });
@@ -144,7 +143,6 @@ io.on("connect", (socket) => {
     let producerList = roomList.get(socket.room_id).getProducerListForPeer();
     socket.emit("existedProducers", producerList);
   });
-
 
   //채팅
   socket.on("message", (data) => {
@@ -245,7 +243,7 @@ io.on("connect", (socket) => {
           roomList.get(socket.room_id).getPeers().get(socket.id).name
         }`,
         producer_id: `${producerId}`,
-  //      consumer_id: `${params.id}`,
+        consumer_id: `${params.id}`,
       });
 
       callback(params);
