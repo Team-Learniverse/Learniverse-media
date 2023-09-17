@@ -83,6 +83,10 @@ async function createWorkers() {
 }
 
 const io = new Server(httpsServer, {
+  cors: {
+    origin: "*",
+    method: ["GET", "POST"],
+  },
   serveClient: false,
   path: "/server",
   log: false,
