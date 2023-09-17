@@ -11,8 +11,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const createPresignedUrlWithClient = ({ region, bucket, key }) => {
-  const { s3AccessKeyId, s3SecretAccessKey, region, s3BucketName, fileName } =
-    config;
+  const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, fileName } = config;
 
   const client = new S3Client({
     region: region,
