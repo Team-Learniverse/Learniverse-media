@@ -152,7 +152,7 @@ io.on("connect", (socket) => {
     data = {
       name: socket.name,
       message: data,
-      time: today.toLocaleTimeString(),
+      time: today.toLocaleTimeString("kr", { hour12: false }).slice(0, -3),
     };
     roomList.get(socket.room_id).broadCast(socket.id, "message", data);
   });
