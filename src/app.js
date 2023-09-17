@@ -83,15 +83,11 @@ async function createWorkers() {
 }
 
 const io = new Server(httpsServer, {
-  cors: {
-    origin: "*",
-    method: ["GET", "POST"],
-  },
   serveClient: false,
   path: "/server",
   log: false,
 });
-
+io.origins("*:*");
 io.on("connect", (socket) => {
   console.log(`클라이언트 연결 성공 - 소켓ID: ${socket.id}`);
 
