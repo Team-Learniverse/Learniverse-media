@@ -6,7 +6,7 @@ import mediasoup from "mediasoup";
 import config from "./config.js";
 import Room from "./Room.js";
 import Peer from "./Peer.js";
-import { Server } from "socket.io";
+import Server from "socket.io";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import cors from "cors";
@@ -32,13 +32,6 @@ const options = {
 };
 
 const httpsServer = http.createServer(app);
-app.use(
-  cors({
-    origin: "*", // 클라이언트의 주소로 대체하세요
-    methods: ["GET", "POST"],
-    credentials: true, // 인증 정보를 허용하려면 true로 설정
-  })
-);
 app.get("/test", (req, res) => {
   res.send("ok");
 });
@@ -91,11 +84,6 @@ async function createWorkers() {
 }
 
 const io = new Server(httpsServer, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
   serveClient: false,
   path: "/server",
   log: false,
