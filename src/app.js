@@ -1,6 +1,6 @@
 import express from "express";
 const app = express();
-import http from "http";
+import https from "httpolyglot";
 import fs from "fs";
 import mediasoup from "mediasoup";
 import config from "./config.js";
@@ -30,7 +30,7 @@ const options = {
   cert: fs.readFileSync("ssl/cert.pem"),
 };
 
-const httpsServer = http.createServer(app);
+const httpsServer = https.createServer(options, app);
 app.get("/test", (req, res) => {
   res.send("ok");
 });
@@ -45,7 +45,7 @@ app.get("/presigned-url", async (req, res) => {
   res.send(clientUrl);
 });
 
-httpsServer.listen(8080, () => {
+httpsServer.listen(config.listenPort, () => {
   console.log(
     "✅ Listening on https://" + config.listenIp + ":" + config.listenPort
   );
@@ -83,7 +83,9 @@ async function createWorkers() {
 }
 
 const io = new Server(httpsServer, {
+  serveClient: false,
   path: "/server",
+  log: false,
 });
 
 io.on("connect", (socket) => {
