@@ -46,7 +46,7 @@ app.get("/presigned-url", async (req, res) => {
   res.send(clientUrl);
 });
 
-httpsServer.listen(8080, "0.0.0.0", () => {
+httpsServer.listen(8080, () => {
   console.log(
     "✅ Listening on https://" + config.listenIp + ":" + config.listenPort
   );
