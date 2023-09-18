@@ -84,7 +84,6 @@ async function createWorkers() {
 
 const io = new Server(httpsServer, {
   serveClient: false,
-  path: "/server",
   log: false,
 });
 
