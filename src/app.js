@@ -1,6 +1,6 @@
 import express from "express";
 const app = express();
-import http from "http";
+import https from "httpolyglot";
 import fs from "fs";
 import mediasoup from "mediasoup";
 import config from "./config.js";
@@ -9,7 +9,6 @@ import Peer from "./Peer.js";
 import Server from "socket.io";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import cors from "cors";
 
 const createPresignedUrlWithClient = ({ region, bucket, key }) => {
   const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, fileName } = config;
@@ -31,7 +30,7 @@ const options = {
   cert: fs.readFileSync("ssl/cert.pem"),
 };
 
-const httpsServer = http.createServer(app);
+const httpsServer = https.createServer(options, app);
 app.get("/test", (req, res) => {
   res.send("ok");
 });
@@ -46,7 +45,7 @@ app.get("/presigned-url", async (req, res) => {
   res.send(clientUrl);
 });
 
-httpsServer.listen(8080, () => {
+httpsServer.listen(config.listenPort, () => {
   console.log(
     "✅ Listening on https://" + config.listenIp + ":" + config.listenPort
   );
