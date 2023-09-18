@@ -6,9 +6,10 @@ import mediasoup from "mediasoup";
 import config from "./config.js";
 import Room from "./Room.js";
 import Peer from "./Peer.js";
-import Server from "socket.io";
+import { Server } from "socket.io";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import cors from "cors";
 
 const createPresignedUrlWithClient = ({ region, bucket, key }) => {
   const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, fileName } = config;
@@ -83,6 +84,7 @@ async function createWorkers() {
 }
 
 const io = new Server(httpsServer, {
+  origins: "*",
   serveClient: false,
   path: "/server",
   log: false,
