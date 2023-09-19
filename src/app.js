@@ -9,6 +9,7 @@ import Peer from "./Peer.js";
 import Server from "socket.io";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import cors from "cors";
 
 const createPresignedUrlWithClient = ({ region, bucket, key }) => {
   const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, fileName } = config;
@@ -30,6 +31,7 @@ const options = {
   cert: fs.readFileSync("ssl/cert.pem"),
 };
 
+app.use(cors());
 const httpsServer = https.createServer(options, app);
 app.get("/test", (req, res) => {
   res.send("ok");
