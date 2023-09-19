@@ -28,6 +28,7 @@ class Room {
       peer.producers.forEach((producer) => {
         producerList.push({
           producer_id: producer.id,
+          produce_type: peer.produceTypes.get(producer.id),
         });
       });
     });

@@ -5,6 +5,7 @@ class Peer {
     this.transports = new Map();
     this.consumers = new Map();
     this.producers = new Map();
+    this.produceTypes = new Map();
   }
 
   addTransport(transport) {
@@ -27,6 +28,7 @@ class Peer {
     });
 
     this.producers.set(producer.id, producer);
+    this.produceTypes.set(producer.id, kind);
 
     producer.on(
       "transportclose",
