@@ -103,6 +103,7 @@ class Room {
           {
             producer_id: producer.id,
             producer_socket_id: socket_id,
+            produce_type: kind,
           },
         ]);
       }.bind(this)
