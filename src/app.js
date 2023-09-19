@@ -251,7 +251,7 @@ io.on("connect", (socket) => {
 
   socket.on("resume", async (data, callback) => {
     await consumer.resume();
-    callback();
+    callback("resume ok");
   });
 
   socket.on("getMyRoomInfo", (_, cb) => {
@@ -288,6 +288,11 @@ io.on("connect", (socket) => {
         roomList.get(socket.room_id).getPeers().get(socket.id).name
       }`,
     });
+    //exit message 보내주기
+    roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
+      room_id: socket.room_id,
+      name: socket.name,
+    });
 
     if (!roomList.has(socket.room_id)) {
       callback({
@@ -300,10 +305,15 @@ io.on("connect", (socket) => {
     if (roomList.get(socket.room_id).getPeers().size === 0) {
       roomList.delete(socket.room_id);
     }
-
     socket.room_id = null;
-
     callback("successfully exited room");
+  });
+
+  socket.on("setVideoOff", (_, callback) => {
+    if (!roomList.has(socket.room_id)) return;
+    const data = { room_id: socket.room_id, name: socket.name };
+    console.log("Video off", socket.name);
+    roomList.get(socket.room_id).broadCast(socket.id, "setVideoOff", data);
   });
 });
 
