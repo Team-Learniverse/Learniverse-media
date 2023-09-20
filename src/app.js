@@ -274,6 +274,7 @@ io.on("connect", (socket) => {
       let params = await roomList
         .get(socket.room_id)
         .consume(
+          socket.id,
           consumerTransportId,
           producerId,
           producerName,
