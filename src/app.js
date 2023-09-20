@@ -103,14 +103,14 @@ io.on("connect", (socket) => {
     }
   });
 
-  socket.on("join", ({ room_id, name }, cb) => {
+  socket.on("join", ({ room_id, name }, callback) => {
     console.log("User joined", {
       room_id: room_id,
       name: name,
     });
 
     if (!roomList.has(room_id)) {
-      return cb({
+      return callback({
         error: "Room does not exist",
       });
     }
@@ -119,7 +119,11 @@ io.on("connect", (socket) => {
     socket.room_id = room_id;
     socket.name = name;
 
-    cb(roomList.get(room_id).toJson());
+    const resJson = {
+      room_id: room_id,
+      peers: roomList.get(socket.room_id).getPeers().values(),
+    };
+    callback(resJson);
   });
 
   socket.on("getProducers", () => {
@@ -132,6 +136,19 @@ io.on("connect", (socket) => {
     let producerList = roomList.get(socket.room_id).getProducerListForPeer();
 
     socket.emit("newProducers", producerList);
+  });
+
+  socket.on("getRoomInfo", (_, callback) => {
+    if (!roomList.has(socket.room_id)) return;
+
+    const resJson = {
+      room_id: socket.room_id,
+      peers: roomList.get(socket.room_id).getPeers().values(),
+      peerCount: roomList.get(socket.room_id).peers.size,
+    };
+    console.log("getRoomInfo", resJson);
+
+    callback(resJson);
   });
 
   socket.on("getOriginProducers", () => {
@@ -256,8 +273,8 @@ io.on("connect", (socket) => {
     callback("resume ok");
   });
 
-  socket.on("getMyRoomInfo", (_, cb) => {
-    cb(roomList.get(socket.room_id).toJson());
+  socket.on("getMyRoomInfo", (_, callback) => {
+    callback(roomList.get(socket.room_id).toJson());
   });
 
   socket.on("disconnect", () => {
