@@ -131,8 +131,6 @@ io.on("connect", (socket) => {
     console.log("Get producers", {
       name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
     });
-
-    // send all the current producer to newly joined member
     let producerList = roomList.get(socket.room_id).getProducerListForPeer();
 
     socket.emit("newProducers", producerList);
@@ -140,14 +138,27 @@ io.on("connect", (socket) => {
 
   socket.on("getRoomInfo", (_, callback) => {
     if (!roomList.has(socket.room_id)) return;
+    let producerList = [];
+    const peers = roomList.get(socket.room_id).getPeers();
+
+    peers.forEach((peer) => {
+      peer.producers.forEach((producer) => {
+        const producerInfo = peer.produceTypes.get(producer.id);
+
+        producerList.push({
+          producer_id: producer.id,
+          produce_type: producerInfo.type,
+          produce_name: producerInfo.name,
+        });
+      });
+    });
 
     const resJson = {
       room_id: socket.room_id,
-      peers: roomList.get(socket.room_id).getPeers().values(),
+      peers: producerList,
       peerCount: roomList.get(socket.room_id).peers.size,
     };
     console.log("getRoomInfo", resJson);
-
     callback(resJson);
   });
 
@@ -233,7 +244,13 @@ io.on("connect", (socket) => {
 
       let producer_id = await roomList
         .get(socket.room_id)
-        .produce(socket.id, producerTransportId, rtpParameters, kind);
+        .produce(
+          socket.id,
+          socket.name,
+          producerTransportId,
+          rtpParameters,
+          kind
+        );
 
       console.log("Produce", {
         type: `${kind}`,
@@ -271,10 +288,6 @@ io.on("connect", (socket) => {
   socket.on("resume", async (data, callback) => {
     await consumer.resume();
     callback("resume ok");
-  });
-
-  socket.on("getMyRoomInfo", (_, callback) => {
-    callback(roomList.get(socket.room_id).toJson());
   });
 
   socket.on("disconnect", () => {

@@ -26,9 +26,11 @@ class Room {
     let producerList = [];
     this.peers.forEach((peer) => {
       peer.producers.forEach((producer) => {
+        const producerInfo = peer.produceTypes.get(producer.id);
         producerList.push({
           producer_id: producer.id,
-          produce_type: peer.produceTypes.get(producer.id),
+          produce_type: producerInfo.type,
+          produce_name: producerInfo.name,
         });
       });
     });
@@ -92,13 +94,24 @@ class Room {
       .connectTransport(transport_id, dtlsParameters);
   }
 
-  async produce(socket_id, producerTransportId, rtpParameters, kind) {
+  async produce(
+    socket_id,
+    socket_name,
+    producerTransportId,
+    rtpParameters,
+    kind
+  ) {
     // handle undefined errors
     return new Promise(
       async function (resolve, reject) {
         let producer = await this.peers
           .get(socket_id)
-          .createProducer(producerTransportId, rtpParameters, kind);
+          .createProducer(
+            socket_name,
+            producerTransportId,
+            rtpParameters,
+            kind
+          );
         resolve(producer.id);
         this.broadCast(socket_id, "newProducers", [
           {

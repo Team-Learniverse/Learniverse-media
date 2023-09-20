@@ -20,7 +20,7 @@ class Peer {
     });
   }
 
-  async createProducer(producerTransportId, rtpParameters, kind) {
+  async createProducer(socket_name, producerTransportId, rtpParameters, kind) {
     //TODO handle null errors
     let producer = await this.transports.get(producerTransportId).produce({
       kind,
@@ -28,7 +28,7 @@ class Peer {
     });
 
     this.producers.set(producer.id, producer);
-    this.produceTypes.set(producer.id, kind);
+    this.produceTypes.set(producer.id, { type: kind, name: socket_name });
 
     producer.on(
       "transportclose",
