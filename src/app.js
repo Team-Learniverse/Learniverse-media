@@ -162,6 +162,22 @@ io.on("connect", (socket) => {
     callback(resJson);
   });
 
+  socket.on("getRoomPeerInfo", (_, callback) => {
+    if (!roomList.has(socket.room_id)) return;
+    let peerList = [];
+    const peers = roomList.get(socket.room_id).getPeers();
+
+    peers.forEach((peer) => {
+      peerList.push({
+        id: peer.id,
+        name: peer.name,
+      });
+    });
+
+    console.log("getRoomPeerInfo", peerList);
+    callback(peerList);
+  });
+
   socket.on("getOriginProducers", () => {
     if (!roomList.has(socket.room_id)) return;
     console.log("Get producers", {
@@ -309,6 +325,10 @@ io.on("connect", (socket) => {
 
     if (!socket.room_id) return;
     roomList.get(socket.room_id).removePeer(socket.id);
+    roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
+      room_id: socket.room_id,
+      name: socket.name,
+    });
   });
 
   socket.on("producerClosed", ({ producer_id }) => {
