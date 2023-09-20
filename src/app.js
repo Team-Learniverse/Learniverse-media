@@ -266,11 +266,19 @@ io.on("connect", (socket) => {
 
   socket.on(
     "consume",
-    async ({ consumerTransportId, producerId, rtpCapabilities }, callback) => {
+    async (
+      { consumerTransportId, producerId, producerName, rtpCapabilities },
+      callback
+    ) => {
       //TODO null handling
       let params = await roomList
         .get(socket.room_id)
-        .consume(socket.id, consumerTransportId, producerId, rtpCapabilities);
+        .consume(
+          consumerTransportId,
+          producerId,
+          producerName,
+          rtpCapabilities
+        );
 
       console.log("Consuming", {
         name: `${

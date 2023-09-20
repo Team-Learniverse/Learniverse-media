@@ -45,7 +45,12 @@ class Peer {
     return producer;
   }
 
-  async createConsumer(consumer_transport_id, producer_id, rtpCapabilities) {
+  async createConsumer(
+    consumer_transport_id,
+    producer_id,
+    producer_name,
+    rtpCapabilities
+  ) {
     let consumerTransport = this.transports.get(consumer_transport_id);
 
     let consumer = null;
@@ -84,6 +89,7 @@ class Peer {
       consumer,
       params: {
         producerId: producer_id,
+        producerName: producer_name,
         id: consumer.id,
         kind: consumer.kind,
         rtpParameters: consumer.rtpParameters,

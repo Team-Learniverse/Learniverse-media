@@ -128,6 +128,7 @@ class Room {
     socket_id,
     consumer_transport_id,
     producer_id,
+    producer_name,
     rtpCapabilities
   ) {
     // handle nulls
@@ -143,7 +144,12 @@ class Room {
 
     let { consumer, params } = await this.peers
       .get(socket_id)
-      .createConsumer(consumer_transport_id, producer_id, rtpCapabilities);
+      .createConsumer(
+        consumer_transport_id,
+        producer_id,
+        producer_name,
+        rtpCapabilities
+      );
 
     consumer.on(
       "producerclose",
