@@ -29,8 +29,9 @@ class Room {
         const producerInfo = peer.produceTypes.get(producer.id);
         producerList.push({
           producer_id: producer.id,
-          produce_type: producerInfo.type,
-          produce_name: producerInfo.name,
+          producer_type: producerInfo.type,
+          producer_user_id: producerInfo.id,
+          producer_user_name: producerInfo.name,
         });
       });
     });
@@ -107,6 +108,7 @@ class Room {
         let producer = await this.peers
           .get(socket_id)
           .createProducer(
+            socket_id,
             socket_name,
             producerTransportId,
             rtpParameters,
