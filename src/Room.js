@@ -118,8 +118,9 @@ class Room {
         this.broadCast(socket_id, "newProducers", [
           {
             producer_id: producer.id,
-            producer_name: socket_name,
-            produce_type: kind,
+            producer_type: kind,
+            producer_user_id: socket_id,
+            producer_user_name: socket_name,
           },
         ]);
       }.bind(this)
