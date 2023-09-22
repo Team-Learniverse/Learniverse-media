@@ -133,6 +133,7 @@ io.on("connect", (socket) => {
     });
     let producerList = roomList.get(socket.room_id).getProducerListForPeer();
 
+    console.log("newProducers", producerList);
     socket.emit("newProducers", producerList);
   });
 
