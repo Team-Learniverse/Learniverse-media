@@ -147,8 +147,9 @@ io.on("connect", (socket) => {
 
         producerList.push({
           producer_id: producer.id,
-          produce_type: producerInfo.type,
-          produce_name: producerInfo.name,
+          producer_type: producerInfo.type,
+          producer_user_id: producerInfo.id,
+          producer_user_name: producerInfo.name,
         });
       });
     });
