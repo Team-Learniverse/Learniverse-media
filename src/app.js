@@ -28,7 +28,7 @@ app.get("/getCapture", S3Controller.getCaptures);
 
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
-  mongoose.connect("mongodb://localhost:27017/assemble", function (err, db) {
+  mongoose.connect("mongodb://127.0.0.1:27017/assemble", function (err, db) {
     if (err) console.log(err);
     else {
       console.log(`✅ db successfully connected  > ${db}`);

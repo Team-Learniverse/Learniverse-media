@@ -16,7 +16,6 @@ AWS.config.update({
   secretAccessKey: s3SecretAccessKey,
 });
 const s3 = new AWS.S3();
-console.log(s3.config);
 
 async function getPresignedUrl(fileName) {
   const params = {
@@ -71,6 +70,7 @@ const S3Controller = {
       console.log(presignedUrlList);
       res.status(200).json(presignedUrlList);
     } catch (err) {
+      console.log(err);
       res.send({ error: err });
     }
   },
