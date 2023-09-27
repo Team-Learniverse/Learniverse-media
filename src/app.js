@@ -7,49 +7,38 @@ import config from "./config.js";
 import Room from "./Room.js";
 import Peer from "./Peer.js";
 import Server from "socket.io";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import cors from "cors";
-
-const createPresignedUrlWithClient = ({ region, bucket, key }) => {
-  const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, fileName } = config;
-
-  const client = new S3Client({
-    region: region,
-    credentials: {
-      accessKeyId: s3AccessKeyId,
-      secretAccessKey: s3SecretAccessKey,
-    },
-  });
-
-  const command = new PutObjectCommand({ Bucket: bucket, Key: key });
-  return getSignedUrl(client, command, { expiresIn: 3600 });
-};
+import S3Controller from "./S3Controller.js";
+import mongoose from "mongoose";
+import bodyParser from "body-parser";
 
 const options = {
   key: fs.readFileSync("ssl/key.pem"),
   cert: fs.readFileSync("ssl/cert.pem"),
 };
-
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 const httpsServer = https.createServer(options, app);
-app.get("/test", (req, res) => {
-  res.send("ok");
-});
-app.get("/presigned-url", async (req, res) => {
-  const { s3SecretAccessKey, s3BucketName } = config;
-  const clientUrl = await createPresignedUrlWithClient({
-    region: "us-east-2",
-    bucket: s3BucketName,
-    key: s3SecretAccessKey,
-  });
 
-  res.send(clientUrl);
-});
+app.get("/test", S3Controller.testFunc);
+// app.get("/presigned-url", S3Controller.getPresignedUrl);
+app.post("/createCapture", S3Controller.createCaptureInfo);
+app.get("/getCapture", S3Controller.getCaptures);
 
 httpsServer.listen(config.listenPort, () => {
+  mongoose.set("strictQuery", false);
+  mongoose.connect("mongodb://localhost:27017/assemble", function (err, db) {
+    if (err) console.log(err);
+    else {
+      console.log(`✅ db successfully connected  > ${db}`);
+    }
+  });
   console.log(
-    "✅ Listening on https://" + config.listenIp + ":" + config.listenPort
+    "✅ server listening on https://" +
+      config.listenIp +
+      ":" +
+      config.listenPort
   );
 });
 // all mediasoup workers
