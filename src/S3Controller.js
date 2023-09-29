@@ -91,7 +91,7 @@ const S3Controller = {
   },
   async getUploadPresigned(req, res) {
     try {
-      const { fileName } = req.body;
+      const { fileName } = req.query;
       const clientUrl = await createPresignedUrlWithClient({
         region: "us-east-2",
         bucket: s3BucketName,
