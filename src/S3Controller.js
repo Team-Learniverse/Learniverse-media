@@ -17,6 +17,21 @@ AWS.config.update({
 });
 const s3 = new AWS.S3();
 
+const createPresignedUrlWithClient = ({ region, bucket, key }) => {
+  const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, fileName } = config;
+
+  const client = new S3Client({
+    region: region,
+    credentials: {
+      accessKeyId: s3AccessKeyId,
+      secretAccessKey: s3SecretAccessKey,
+    },
+  });
+
+  const command = new PutObjectCommand({ Bucket: bucket, Key: key });
+  return getSignedUrl(client, command, { expiresIn: 3600 });
+};
+
 async function getPresignedUrl(fileName) {
   const params = {
     Bucket: s3BucketName,
@@ -73,6 +88,16 @@ const S3Controller = {
       console.log(err);
       res.send({ error: err });
     }
+  },
+  async getUploadPresigned(req, res) {
+    const { fileName } = req.body;
+    const clientUrl = await createPresignedUrlWithClient({
+      region: "us-east-2",
+      bucket: s3BucketName,
+      key: fileName,
+    });
+
+    res.send(clientUrl);
   },
 };
 

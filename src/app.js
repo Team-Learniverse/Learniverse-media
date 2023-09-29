@@ -22,7 +22,7 @@ app.use(cors());
 const httpsServer = https.createServer(options, app);
 
 app.get("/test", S3Controller.testFunc);
-// app.get("/presigned-url", S3Controller.getPresignedUrl);
+app.get("/presigned-url", S3Controller.getUploadPresigned);
 app.post("/createCapture", S3Controller.createCaptureInfo);
 app.get("/getCapture", S3Controller.getCaptures);
 
