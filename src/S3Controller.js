@@ -90,14 +90,18 @@ const S3Controller = {
     }
   },
   async getUploadPresigned(req, res) {
-    const { fileName } = req.body;
-    const clientUrl = await createPresignedUrlWithClient({
-      region: "us-east-2",
-      bucket: s3BucketName,
-      key: fileName,
-    });
+    try {
+      const { fileName } = req.body;
+      const clientUrl = await createPresignedUrlWithClient({
+        region: "us-east-2",
+        bucket: s3BucketName,
+        key: fileName,
+      });
 
-    res.send(clientUrl);
+      res.send(clientUrl);
+    } catch (err) {
+      res.send({ error: err });
+    }
   },
 };
 
