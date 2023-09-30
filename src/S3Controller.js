@@ -3,7 +3,34 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import Capture from "./models/captureModel.js";
 import AWS from "aws-sdk";
+import axios from "axios";
 const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, region } = config;
+var requestUrl = "https://fcm.googleapis.com/fcm/send";
+
+async function sendMessage(token, topic) {
+  //매개변수로 가져와서 넣어주도록 수정하기
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: config.serverKey,
+  };
+  let message = {
+    data: {},
+    notification: {
+      title: "테스트 데이터 발송",
+      body: "데이터가 잘 가나요?",
+    },
+    token: token,
+    to: topic,
+  };
+  try {
+    const response = await axios.post(requestUrl, message, { headers });
+
+    console.log("응답 데이터:", response.data);
+  } catch (error) {
+    // 오류가 발생했을 때의 처리
+    console.error("POST 요청 중 오류 발생:", error);
+  }
+}
 
 const credentials = new AWS.SharedIniFileCredentials({
   profile: "work-account",
