@@ -27,7 +27,9 @@ app.post("/createCapture", S3Controller.createCaptureInfo);
 app.get("/getCapture", S3Controller.getCaptures);
 app.post("/createCaptureTime", S3Controller.createCaptureTime);
 app.get("/getCaptureTime", S3Controller.getCaptureTime);
-
+app.get("/getServerTime", (req, res) => {
+  res.send(new Date());
+});
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
   mongoose.connect("mongodb://127.0.0.1:27017/assemble", function (err, db) {
