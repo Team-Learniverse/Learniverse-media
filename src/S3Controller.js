@@ -4,11 +4,17 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import Capture from "./models/captureModel.js";
 import AWS from "aws-sdk";
 import axios from "axios";
+import CaptureTime from "./models/captureTime.js";
+import schedule from "node-schedule";
+
 const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, region } = config;
 var requestUrl = "https://fcm.googleapis.com/fcm/send";
 
-async function sendMessage(token, topic) {
-  //매개변수로 가져와서 넣어주도록 수정하기
+async function sendMessage(resJson) {
+  let { tokens, topic } = resJson;
+  topic = "/topics/" + topic.toString();
+  console.log("sendMessage 호출 + coreTimeId=", topic);
+  console.log("tokens=", tokens);
   const headers = {
     "Content-Type": "application/json",
     Authorization: config.serverKey,
@@ -16,11 +22,11 @@ async function sendMessage(token, topic) {
   let message = {
     data: {},
     notification: {
-      title: "테스트 데이터 발송",
-      body: "데이터가 잘 가나요?",
+      title: "[learniverse] randomCapture",
+      body: "현재 코딩중인 화면을 공유해주세요",
     },
-    token: token,
     to: topic,
+    tokens: tokens,
   };
   try {
     const response = await axios.post(requestUrl, message, { headers });
@@ -127,6 +133,65 @@ const S3Controller = {
 
       res.send(clientUrl);
     } catch (err) {
+      res.send({ error: err });
+    }
+  },
+  async createCaptureTime(req, res) {
+    //이미지 정보 생성
+    try {
+      let { coreTimeId, startTime, endTime, captureCount, tokens } = req.body;
+      startTime = new Date(startTime);
+      endTime = new Date(endTime);
+      if (startTime < new Date() || endTime < new Date()) {
+        console.log("코어타임 시작/끝 시간이 현재보다 과거입니다.");
+        res
+          .status(400)
+          .send({ error: "코어타임 시작/끝 시간이 현재보다 과거입니다." });
+        return;
+      }
+      const timeDiff = (endTime - startTime) / captureCount;
+
+      let times = [];
+      let lastTime = startTime;
+      console.log(
+        "코어타임 생성\n",
+        startTime,
+        endTime,
+        timeDiff,
+        new Date(),
+        "\n"
+      );
+
+      for (let i = 0; i < captureCount; i++) {
+        lastTime = new Date(lastTime.getTime() + timeDiff);
+        const createdCatpure = new CaptureTime({
+          coreTimeId,
+          captureTime: lastTime,
+        });
+        const savedTime = await createdCatpure.save();
+        //스케줄러 호출
+        schedule.scheduleJob(
+          lastTime,
+          sendMessage.bind(null, { tokens, topic: coreTimeId })
+        );
+        times.push(savedTime);
+      }
+      res.status(200).json(times);
+    } catch (err) {
+      console.log(err);
+      res.send({ error: err });
+    }
+  },
+  async getCaptureTime(req, res) {
+    try {
+      const { coreTimeId } = req.query;
+      const captureTimeList = await CaptureTime.find()
+        .where("coreTimeId")
+        .equals(coreTimeId);
+
+      res.status(200).json(captureTimeList);
+    } catch (err) {
+      console.log(err);
       res.send({ error: err });
     }
   },

@@ -25,6 +25,8 @@ app.get("/test", S3Controller.testFunc);
 app.get("/presigned-url", S3Controller.getUploadPresigned);
 app.post("/createCapture", S3Controller.createCaptureInfo);
 app.get("/getCapture", S3Controller.getCaptures);
+app.post("/createCaptureTime", S3Controller.createCaptureTime);
+app.get("/getCaptureTime", S3Controller.getCaptureTime);
 
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
