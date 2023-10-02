@@ -38,12 +38,8 @@ app.get("/getKorTime", (req, res) => {
   res.send(kr_curr);
 });
 app.get("/getServerTime", (req, res) => {
-  const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
-  //ec2 배포되어있는 주 기준
-  const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
-  const kr_curr = new Date(utc - KR_TIME_DIFF);
-  console.log("한국시간 : " + kr_curr);
-  return kr_curr;
+  const curr = new Date();
+  return curr;
 });
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
