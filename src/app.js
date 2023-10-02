@@ -27,7 +27,7 @@ app.post("/createCapture", S3Controller.createCaptureInfo);
 app.get("/getCapture", S3Controller.getCaptures);
 app.post("/createCaptureTime", S3Controller.createCaptureTime);
 app.get("/getCaptureTime", S3Controller.getCaptureTime);
-app.get("/getServerTime", (req, res) => {
+app.get("/getKorTime", (req, res) => {
   const curr = new Date();
   console.log("현재시간(Locale) : " + curr + "<br>");
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
@@ -37,7 +37,14 @@ app.get("/getServerTime", (req, res) => {
   console.log("한국시간 : " + kr_curr);
   res.send(kr_curr);
 });
-
+app.get("/getServerTime", (req, res) => {
+  const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
+  //ec2 배포되어있는 주 기준
+  const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
+  const kr_curr = new Date(utc - KR_TIME_DIFF);
+  console.log("한국시간 : " + kr_curr);
+  return kr_curr;
+});
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
   mongoose.connect("mongodb://127.0.0.1:27017/assemble", function (err, db) {

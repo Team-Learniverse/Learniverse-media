@@ -10,11 +10,11 @@ import schedule from "node-schedule";
 const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, region } = config;
 var requestUrl = "https://fcm.googleapis.com/fcm/send";
 
-async function getKorTime(curr) {
+async function getUTCTime(curr) {
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   //ec2 배포되어있는 주 기준
   const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
-  const kr_curr = new Date(utc + KR_TIME_DIFF);
+  const kr_curr = new Date(utc - KR_TIME_DIFF);
   console.log("한국시간 : " + kr_curr);
   return kr_curr;
 }
@@ -192,7 +192,7 @@ const S3Controller = {
         const savedTime = await createdCatpure.save();
         //스케줄러 호출
         schedule.scheduleJob(
-          lastTime,
+          getUTCTime(lastTime),
           sendMessage.bind(null, { tokens, topic: coreTimeId })
         );
         times.push(savedTime);
