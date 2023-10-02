@@ -15,18 +15,15 @@ async function getUTCTime(curr) {
   //ec2 배포되어있는 주 기준
   const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
   const kr_curr = new Date(utc - KR_TIME_DIFF);
-  console.log("한국시간 : " + kr_curr);
   return kr_curr;
 }
 
 async function getNowKorTime() {
   const curr = new Date();
-  console.log("현재시간(Locale) : " + curr + "<br>");
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   //ec2 배포되어있는 주 기준
   const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
   const kr_curr = new Date(utc + KR_TIME_DIFF);
-  console.log("한국시간 : " + kr_curr);
   return kr_curr;
 }
 
