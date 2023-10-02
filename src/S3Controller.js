@@ -13,7 +13,7 @@ var requestUrl = "https://fcm.googleapis.com/fcm/send";
 async function getKorTime(curr) {
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   //ec2 배포되어있는 주 기준
-  const KR_TIME_DIFF = 13 * 60 * 60 * 1000;
+  const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
   const kr_curr = new Date(utc + KR_TIME_DIFF);
   console.log("한국시간 : " + kr_curr);
   return kr_curr;
@@ -24,7 +24,7 @@ async function getNowKorTime() {
   console.log("현재시간(Locale) : " + curr + "<br>");
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   //ec2 배포되어있는 주 기준
-  const KR_TIME_DIFF = 13 * 60 * 60 * 1000;
+  const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
   const kr_curr = new Date(utc + KR_TIME_DIFF);
   console.log("한국시간 : " + kr_curr);
   return kr_curr;
