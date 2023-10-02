@@ -28,8 +28,16 @@ app.get("/getCapture", S3Controller.getCaptures);
 app.post("/createCaptureTime", S3Controller.createCaptureTime);
 app.get("/getCaptureTime", S3Controller.getCaptureTime);
 app.get("/getServerTime", (req, res) => {
-  res.send(new Date());
+  const curr = new Date();
+  console.log("현재시간(Locale) : " + curr + "<br>");
+  const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
+  const KR_TIME_DIFF = 13 * 60 * 60 * 1000;
+  const kr_curr = new Date(utc + KR_TIME_DIFF);
+
+  console.log("한국시간 : " + kr_curr);
+  res.send(kr_curr);
 });
+
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
   mongoose.connect("mongodb://127.0.0.1:27017/assemble", function (err, db) {

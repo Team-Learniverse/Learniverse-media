@@ -10,6 +10,26 @@ import schedule from "node-schedule";
 const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, region } = config;
 var requestUrl = "https://fcm.googleapis.com/fcm/send";
 
+async function getKorTime(curr) {
+  const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
+  //ec2 배포되어있는 주 기준
+  const KR_TIME_DIFF = 13 * 60 * 60 * 1000;
+  const kr_curr = new Date(utc + KR_TIME_DIFF);
+  console.log("한국시간 : " + kr_curr);
+  return kr_curr;
+}
+
+async function getNowKorTime() {
+  const curr = new Date();
+  console.log("현재시간(Locale) : " + curr + "<br>");
+  const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
+  //ec2 배포되어있는 주 기준
+  const KR_TIME_DIFF = 13 * 60 * 60 * 1000;
+  const kr_curr = new Date(utc + KR_TIME_DIFF);
+  console.log("한국시간 : " + kr_curr);
+  return kr_curr;
+}
+
 async function sendMessage(resJson) {
   let { tokens, topic } = resJson;
   topic = "/topics/" + topic.toString();
@@ -25,8 +45,7 @@ async function sendMessage(resJson) {
       title: "[learniverse] randomCapture",
       body: "현재 코딩중인 화면을 공유해주세요",
     },
-    to: topic,
-    tokens: tokens,
+    registration_ids: tokens,
   };
   try {
     const response = await axios.post(requestUrl, message, { headers });
@@ -142,7 +161,9 @@ const S3Controller = {
       let { coreTimeId, startTime, endTime, captureCount, tokens } = req.body;
       startTime = new Date(startTime);
       endTime = new Date(endTime);
-      if (startTime < new Date() || endTime < new Date()) {
+
+      const nowKor = getNowKorTime();
+      if (startTime < nowKor || endTime < nowKor) {
         console.log("코어타임 시작/끝 시간이 현재보다 과거입니다.");
         res
           .status(400)
@@ -158,7 +179,7 @@ const S3Controller = {
         startTime,
         endTime,
         timeDiff,
-        new Date(),
+        nowKor,
         "\n"
       );
 
