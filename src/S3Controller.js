@@ -160,13 +160,13 @@ const S3Controller = {
       endTime = new Date(endTime);
 
       const nowKor = getNowKorTime();
-      if (startTime < nowKor || endTime < nowKor) {
-        console.log("코어타임 시작/끝 시간이 현재보다 과거입니다.");
-        res
-          .status(400)
-          .send({ error: "코어타임 시작/끝 시간이 현재보다 과거입니다." });
-        return;
-      }
+      // if (startTime < nowKor || endTime < nowKor) {
+      //   console.log("코어타임 시작/끝 시간이 현재보다 과거입니다.");
+      //   res
+      //     .status(400)
+      //     .send({ error: "코어타임 시작/끝 시간이 현재보다 과거입니다." });
+      //   return;
+      // }
       const timeDiff = (endTime - startTime) / captureCount;
 
       let times = [];
