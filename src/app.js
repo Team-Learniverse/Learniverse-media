@@ -39,7 +39,7 @@ app.get("/getKorTime", (req, res) => {
 });
 app.get("/getServerTime", (req, res) => {
   const curr = new Date();
-  return curr;
+  res.send(curr);
 });
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
