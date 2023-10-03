@@ -189,7 +189,7 @@ const S3Controller = {
         });
         const savedTime = await createdCatpure.save();
         //스케줄러 호출
-        alarmTimes.push(getUTCTime(lastTime));
+        alarmTimes.push(lastTime);
         if (i != captureCount - 1) times.push(savedTime);
       }
       alarmTimes.forEach((time) => {
