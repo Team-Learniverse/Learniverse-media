@@ -13,7 +13,7 @@ var requestUrl = "https://fcm.googleapis.com/fcm/send";
 function getUTCTime(curr) {
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   //ec2 배포되어있는 주 기준
-  const KR_TIME_DIFF = 8 * 60 * 60 * 1000;
+  const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
   const kr_curr = new Date(utc - KR_TIME_DIFF);
   return kr_curr;
 }
