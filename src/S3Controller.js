@@ -10,7 +10,7 @@ import schedule from "node-schedule";
 const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, region } = config;
 var requestUrl = "https://fcm.googleapis.com/fcm/send";
 
-async function getUTCTime(curr) {
+function getUTCTime(curr) {
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   //ec2 배포되어있는 주 기준
   const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
@@ -18,7 +18,7 @@ async function getUTCTime(curr) {
   return kr_curr;
 }
 
-async function getNowKorTime() {
+function getNowKorTime() {
   const curr = new Date();
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   //ec2 배포되어있는 주 기준
@@ -195,6 +195,7 @@ const S3Controller = {
       alarmTimes.forEach((time) => {
         console.log(time);
         const targetDateTime = new Date(time);
+        console.log(targetDateTime, "\n\n");
 
         const rule = new schedule.RecurrenceRule();
         rule.year = targetDateTime.getFullYear();
