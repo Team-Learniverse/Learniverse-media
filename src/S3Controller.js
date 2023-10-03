@@ -30,8 +30,8 @@ function getNowKorTime() {
 async function sendMessage(resJson) {
   let { tokens, topic } = resJson;
   topic = "/topics/" + topic.toString();
-  console.log("sendMessage 호출 + coreTimeId=", topic);
-  console.log("tokens=", tokens);
+  console.log(`알림: ${new Date()}에 알림을 보냅니다.\n`);
+  console.log("sendMessage 호출 + coreTimeId=", topic, "/tokens=", tokens);
   const headers = {
     "Content-Type": "application/json",
     Authorization: config.serverKey,
@@ -205,10 +205,10 @@ const S3Controller = {
         rule.minute = targetDateTime.getMinutes();
         rule.second = targetDateTime.getSeconds();
 
-        schedule.scheduleJob(rule, function () {
-          console.log(`알림: ${time}에 알림을 보냅니다.`);
-          sendMessage.bind(null, { tokens, topic: coreTimeId });
-        });
+        schedule.scheduleJob(
+          rule,
+          sendMessage.bind(null, { tokens, topic: coreTimeId })
+        );
       });
 
       res.status(200).json(times);
