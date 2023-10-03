@@ -167,7 +167,7 @@ const S3Controller = {
       //     .send({ error: "코어타임 시작/끝 시간이 현재보다 과거입니다." });
       //   return;
       // }
-      const timeDiff = (endTime - startTime) / captureCount;
+      const timeDiff = (endTime - startTime) / (captureCount + 1);
 
       let times = [];
       let lastTime = startTime;
@@ -190,7 +190,7 @@ const S3Controller = {
         const savedTime = await createdCatpure.save();
         //스케줄러 호출
         alarmTimes.push(getUTCTime(lastTime));
-        times.push(savedTime);
+        if (i != captureCount - 1) times.push(savedTime);
       }
       alarmTimes.forEach((time) => {
         console.log(time);
