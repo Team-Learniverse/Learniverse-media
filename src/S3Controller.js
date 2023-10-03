@@ -193,6 +193,7 @@ const S3Controller = {
         times.push(savedTime);
       }
       alarmTimes.forEach((time) => {
+        console.log(time);
         const targetDateTime = new Date(time);
 
         const rule = new schedule.RecurrenceRule();
