@@ -180,6 +180,7 @@ const S3Controller = {
         "\n"
       );
 
+      let alarmTimes = [];
       for (let i = 0; i < captureCount; i++) {
         lastTime = new Date(lastTime.getTime() + timeDiff);
         const createdCatpure = new CaptureTime({
@@ -188,12 +189,26 @@ const S3Controller = {
         });
         const savedTime = await createdCatpure.save();
         //스케줄러 호출
-        schedule.scheduleJob(
-          getUTCTime(lastTime),
-          sendMessage.bind(null, { tokens, topic: coreTimeId })
-        );
+        alarmTimes.push(getUTCTime(lastTime));
         times.push(savedTime);
       }
+      alarmTimes.forEach((time) => {
+        const targetDateTime = new Date(time);
+
+        const rule = new schedule.RecurrenceRule();
+        rule.year = targetDateTime.getFullYear();
+        rule.month = targetDateTime.getMonth();
+        rule.date = targetDateTime.getDate();
+        rule.hour = targetDateTime.getHours();
+        rule.minute = targetDateTime.getMinutes();
+        rule.second = targetDateTime.getSeconds();
+
+        schedule.scheduleJob(rule, function () {
+          console.log(`알림: ${time}에 알림을 보냅니다.`);
+          sendMessage.bind(null, { tokens, topic: coreTimeId });
+        });
+      });
+
       res.status(200).json(times);
     } catch (err) {
       console.log(err);
