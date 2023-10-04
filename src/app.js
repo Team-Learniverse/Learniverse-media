@@ -14,6 +14,7 @@ import bodyParser from "body-parser";
 import * as utilService from "./util.js";
 import schedule from "node-schedule";
 import cricularJson from "circular-json";
+import ValidMember from "./models/validMember.js";
 
 const options = {
   key: fs.readFileSync("ssl/key.pem"),
@@ -35,14 +36,19 @@ app.get("/tqtq", async (req, res) => {
   res.send(resJson);
 });
 app.get("/removeJob", async (req, res) => {
+  const { memberId } = req.query;
   var list = schedule.scheduledJobs;
   const resJson = cricularJson.stringify(list);
 
-  const hello123job = list["hello1234"]; // returns Job object corresponding to job with name 'hello123'
-  console.log(hello123job);
-  const status = schedule.cancelJob(hello123job);
+  const job = list[memberId.toString()]; // returns Job object corresponding to job with name 'hello123'
+  console.log(job);
+  const status = schedule.cancelJob(job);
   console.log(status);
-
+  const updateResult = await ValidMember.updateOne(
+    { memberId: memberId },
+    { isValid: false }
+  );
+  console.log(updateResult);
   res.send(resJson);
 });
 
@@ -407,6 +413,29 @@ io.on("connect", (socket) => {
     const data = { room_id: socket.room_id, name: socket.name };
     console.log("Video off", socket.name);
     roomList.get(socket.room_id).broadCast(socket.id, "setVideoOff", data);
+  });
+
+  socket.on(
+    "setCaptureAlert",
+    async ({ memberId, roomId, coreTimeId, token }, callback) => {
+      const params = { memberId, roomId, coreTimeId, token };
+      console.log("코어타임 생성", params);
+      const coreTimes = await utilService.setAlaram(params);
+      callback(coreTimes);
+    }
+  );
+  socket.on("removeCaptureAlert", async ({ memberId }, callback) => {
+    var list = schedule.scheduledJobs;
+    const memberJob = list[memberId];
+    const status = schedule.cancelJob(memberJob);
+    const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
+    const updateResult = await ValidMember.updateOne(
+      { memberId: memberId },
+      { isValid: false }
+    );
+    console.log(updateResult);
+    console.log(resultMsg);
+    callback(resultMsg);
   });
 });
 
