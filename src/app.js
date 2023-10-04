@@ -30,34 +30,6 @@ app.get("/presigned-url", S3Controller.getUploadPresigned);
 app.post("/createCapture", S3Controller.createCaptureInfo);
 app.get("/getCapture", S3Controller.getCaptures);
 app.post("/createCaptureTime", S3Controller.createCaptureTime);
-app.get("/tqtq", async (req, res) => {
-  var list = schedule.scheduledJobs;
-  const resJson = cricularJson.stringify(list);
-  res.send(resJson);
-});
-app.get("/removeJob", async (req, res) => {
-  const { memberId } = req.query;
-  var list = schedule.scheduledJobs;
-  const resJson = cricularJson.stringify(list);
-
-  const job = list[memberId.toString()]; // returns Job object corresponding to job with name 'hello123'
-  console.log(job);
-  const status = schedule.cancelJob(job);
-  console.log(status);
-  const updateResult = await ValidMember.updateOne(
-    { memberId: memberId },
-    { isValid: false }
-  );
-  console.log(updateResult);
-  res.send(resJson);
-});
-
-app.post("/testCore", async (req, res) => {
-  //여기서 메시지 보내줄 거임 나중에 socket으로 옮길거
-  const { memberId, roomId, coreTimeId, token } = req.body;
-  const coreTimes = await utilService.setAlaram(req.body);
-  res.send("ok");
-});
 app.get("/getCaptureTime", S3Controller.getCaptureTime);
 app.get("/getKorTime", (req, res) => {
   const curr = new Date();
@@ -387,7 +359,7 @@ io.on("connect", (socket) => {
         roomList.get(socket.room_id).getPeers().get(socket.id).name
       }`,
     });
-    const name =roomList.get(socket.room_id).getPeers().get(socket.id).name
+    const name = roomList.get(socket.room_id).getPeers().get(socket.id).name;
 
     //exit message 보내주기
     const updateResult = await ValidMember.updateOne(
