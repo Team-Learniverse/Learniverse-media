@@ -388,6 +388,12 @@ io.on("connect", (socket) => {
       }`,
     });
     //exit message 보내주기
+    const updateResult = await ValidMember.updateOne(
+      { memberId: memberId },
+      { isValid: false }
+    );
+    console.log(updateResult);
+
     roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
       room_id: socket.room_id,
       name: socket.name,
