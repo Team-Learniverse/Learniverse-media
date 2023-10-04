@@ -387,9 +387,11 @@ io.on("connect", (socket) => {
         roomList.get(socket.room_id).getPeers().get(socket.id).name
       }`,
     });
+    const name =roomList.get(socket.room_id).getPeers().get(socket.id).name
+
     //exit message 보내주기
     const updateResult = await ValidMember.updateOne(
-      { memberId: memberId },
+      { memberId: name },
       { isValid: false }
     );
     console.log(updateResult);
