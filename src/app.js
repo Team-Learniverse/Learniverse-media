@@ -417,14 +417,14 @@ io.on("connect", (socket) => {
 
   socket.on(
     "setCaptureAlert",
-    async ({ memberId, roomId, coreTimeId, token }, callback) => {
+    async ({ memberId, roomId, coreTimeId, token }, _) => {
       const params = { memberId, roomId, coreTimeId, token };
       console.log("코어타임 생성", params);
       const coreTimes = await utilService.setAlaram(params);
-      callback(coreTimes);
     }
   );
-  socket.on("removeCaptureAlert", async ({ memberId }, callback) => {
+
+  socket.on("removeCaptureAlert", async ({ memberId }, _) => {
     var list = schedule.scheduledJobs;
     const memberJob = list[memberId];
     const status = schedule.cancelJob(memberJob);
@@ -435,7 +435,6 @@ io.on("connect", (socket) => {
     );
     console.log(updateResult);
     console.log(resultMsg);
-    callback(resultMsg);
   });
 });
 
