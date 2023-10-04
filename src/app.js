@@ -361,12 +361,8 @@ io.on("connect", (socket) => {
     });
     const name = roomList.get(socket.room_id).getPeers().get(socket.id).name;
 
-    //exit message 보내주기
-    const updateResult = await ValidMember.updateOne(
-      { memberId: name },
-      { isValid: false }
-    );
-    console.log(updateResult);
+    //exit message 보내주기 && 멤버 상태 업데이트
+    await ValidMember.updateOne({ memberId: name }, { isValid: false });
 
     roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
       room_id: socket.room_id,
