@@ -11,6 +11,9 @@ import cors from "cors";
 import S3Controller from "./S3Controller.js";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
+import * as utilService from "./util.js";
+import schedule from "node-schedule";
+import cricularJson from "circular-json";
 
 const options = {
   key: fs.readFileSync("ssl/key.pem"),
@@ -26,6 +29,29 @@ app.get("/presigned-url", S3Controller.getUploadPresigned);
 app.post("/createCapture", S3Controller.createCaptureInfo);
 app.get("/getCapture", S3Controller.getCaptures);
 app.post("/createCaptureTime", S3Controller.createCaptureTime);
+app.get("/tqtq", async (req, res) => {
+  var list = schedule.scheduledJobs;
+  const resJson = cricularJson.stringify(list);
+  res.send(resJson);
+});
+app.get("/removeJob", async (req, res) => {
+  var list = schedule.scheduledJobs;
+  const resJson = cricularJson.stringify(list);
+
+  const hello123job = list["hello1234"]; // returns Job object corresponding to job with name 'hello123'
+  console.log(hello123job);
+  const status = schedule.cancelJob(hello123job);
+  console.log(status);
+
+  res.send(resJson);
+});
+
+app.post("/testCore", async (req, res) => {
+  //여기서 메시지 보내줄 거임 나중에 socket으로 옮길거
+  const { memberId, roomId, coreTimeId, token } = req.body;
+  const coreTimes = await utilService.setAlaram(req.body);
+  res.send("ok");
+});
 app.get("/getCaptureTime", S3Controller.getCaptureTime);
 app.get("/getKorTime", (req, res) => {
   const curr = new Date();
@@ -43,7 +69,7 @@ app.get("/getServerTime", (req, res) => {
 });
 httpsServer.listen(config.listenPort, () => {
   mongoose.set("strictQuery", false);
-  mongoose.connect("mongodb://127.0.0.1:27017/assemble", function (err, db) {
+  mongoose.connect("mongodb://127.0.0.1:27017/learniverse", function (err, db) {
     if (err) console.log(err);
     else {
       console.log(`✅ db successfully connected  > ${db}`);

@@ -3,12 +3,9 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import Capture from "./models/captureModel.js";
 import AWS from "aws-sdk";
-import axios from "axios";
 import CaptureTime from "./models/captureTime.js";
-import schedule from "node-schedule";
 
 const { s3AccessKeyId, s3SecretAccessKey, s3BucketName, region } = config;
-var requestUrl = "https://fcm.googleapis.com/fcm/send";
 
 function getUTCTime(curr) {
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
@@ -25,33 +22,6 @@ function getNowKorTime() {
   const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
   const kr_curr = new Date(utc + KR_TIME_DIFF);
   return kr_curr;
-}
-
-async function sendMessage(resJson) {
-  let { tokens, topic } = resJson;
-  topic = "/topics/" + topic.toString();
-  console.log(`알림: ${new Date()}에 알림을 보냅니다.\n`);
-  console.log("sendMessage 호출 + coreTimeId=", topic, "/tokens=", tokens);
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: config.serverKey,
-  };
-  let message = {
-    data: {},
-    notification: {
-      title: "[learniverse] randomCapture",
-      body: "현재 코딩중인 화면을 공유해주세요",
-    },
-    registration_ids: tokens,
-  };
-  try {
-    const response = await axios.post(requestUrl, message, { headers });
-
-    console.log("응답 데이터:", response.data);
-  } catch (error) {
-    // 오류가 발생했을 때의 처리
-    console.error("POST 요청 중 오류 발생:", error);
-  }
 }
 
 const credentials = new AWS.SharedIniFileCredentials({
@@ -155,18 +125,11 @@ const S3Controller = {
   async createCaptureTime(req, res) {
     //이미지 정보 생성
     try {
-      let { coreTimeId, startTime, endTime, captureCount, tokens } = req.body;
+      let { coreTimeId, startTime, endTime, captureCount } = req.body;
       startTime = new Date(startTime);
       endTime = new Date(endTime);
 
       const nowKor = getNowKorTime();
-      // if (startTime < nowKor || endTime < nowKor) {
-      //   console.log("코어타임 시작/끝 시간이 현재보다 과거입니다.");
-      //   res
-      //     .status(400)
-      //     .send({ error: "코어타임 시작/끝 시간이 현재보다 과거입니다." });
-      //   return;
-      // }
       const timeDiff = (endTime - startTime) / (captureCount + 1);
 
       let times = [];
@@ -180,37 +143,18 @@ const S3Controller = {
         "\n"
       );
 
-      let alarmTimes = [];
       for (let i = 0; i < captureCount; i++) {
         lastTime = new Date(lastTime.getTime() + timeDiff);
         const createdCatpure = new CaptureTime({
           coreTimeId,
           captureTime: lastTime,
         });
-        const savedTime = await createdCatpure.save();
-        //스케줄러 호출
-        alarmTimes.push(lastTime);
-        if (i != captureCount - 1) times.push(savedTime);
+        if (i != captureCount - 1) {
+          //endTime 제외하고
+          const savedTime = await createdCatpure.save();
+          times.push(savedTime);
+        }
       }
-      alarmTimes.forEach((time) => {
-        console.log(time);
-        const targetDateTime = new Date(time);
-        console.log(targetDateTime, "\n\n");
-
-        const rule = new schedule.RecurrenceRule();
-        rule.year = targetDateTime.getFullYear();
-        rule.month = targetDateTime.getMonth();
-        rule.date = targetDateTime.getDate();
-        rule.hour = targetDateTime.getHours();
-        rule.minute = targetDateTime.getMinutes();
-        rule.second = targetDateTime.getSeconds();
-
-        schedule.scheduleJob(
-          rule,
-          sendMessage.bind(null, { tokens, topic: coreTimeId })
-        );
-      });
-
       res.status(200).json(times);
     } catch (err) {
       console.log(err);
