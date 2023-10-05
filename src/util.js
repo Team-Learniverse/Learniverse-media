@@ -22,12 +22,14 @@ async function setAlaram(resJson) {
   const isMemberExist = await ValidMember.findOne()
     .where("memberId")
     .equals(memberId);
+  console.log(isMemberExist);
   if (isMemberExist) {
     const result = await ValidMember.updateOne(
       { memberId: memberId },
       { isValid: true }
     );
-    console.log(`${memberId} 의 알람 켜짐 isValid = ${result[0].isValid}`);
+
+    console.log(`${memberId} 의 알람 켜짐 isValid =true`);
   } else {
     const memberInfo = new ValidMember({ memberId, isValid: true });
     const saveMember = await memberInfo.save();
