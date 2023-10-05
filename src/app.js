@@ -428,9 +428,7 @@ io.on("connect", (socket) => {
     await ValidMember.updateOne({ memberId: memberId }, { isValid: false });
     const result = ValidMember.find().where("memberId").equals(memberId);
 
-    console.log(
-      `${memberId}의 현재 메시지 수신여부 ${updateResult[0].isValid}`
-    );
+    console.log(`${memberId}의 현재 메시지 수신여부 ${result[0].isValid}`);
 
     console.log(updateResult);
     console.log(resultMsg);
