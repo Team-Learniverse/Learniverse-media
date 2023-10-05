@@ -325,7 +325,7 @@ io.on("connect", (socket) => {
     callback("resume ok");
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     if (!socket.room_id) return;
 
     console.log("Disconnect", {
@@ -342,13 +342,13 @@ io.on("connect", (socket) => {
       .get(socket.id).name;
     var list = schedule.scheduledJobs;
 
-    const memberJob = list[memberId];
+    const memberJob = list[memberId.toString()];
     const status = schedule.cancelJob(memberJob);
     const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
-    ValidMember.updateOne({ memberId: memberId }, { isValid: false });
-    const result = ValidMember.find().where("memberId").equals(memberId);
+    await ValidMember.updateOne({ memberId: memberId }, { isValid: false });
+    const result = await ValidMember.find().where("memberId").equals(memberId);
     console.log(resultMsg);
-    console.log(`${memberId}의 현재 메시지 수신여부 ${result[0].isValid}`);
+    console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
 
     roomList.get(socket.room_id).removePeer(socket.id);
     roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
@@ -379,8 +379,12 @@ io.on("connect", (socket) => {
 
     //exit message 보내주기 && 멤버 상태 업데이트
     await ValidMember.updateOne({ memberId: name }, { isValid: false });
-    const result = ValidMember.find().where("memberId").equals(memberId);
-    console.log(`${memberId}의 현재 메시지 수신여부 ${result[0].isValid}`);
+    const memberId = roomList
+      .get(socket.room_id)
+      .getPeers()
+      .get(socket.id).name;
+    const result = await ValidMember.find().where("memberId").equals(memberId);
+    console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
 
     roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
       room_id: socket.room_id,
@@ -422,15 +426,15 @@ io.on("connect", (socket) => {
   socket.on("removeCaptureAlert", async ({ memberId }, callback) => {
     console.log("removeCaptureAlert");
     var list = schedule.scheduledJobs;
-    const memberJob = list[memberId];
+    const memberJob = list[memberId.toString()];
     const status = schedule.cancelJob(memberJob);
     const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
     await ValidMember.updateOne({ memberId: memberId }, { isValid: false });
     const result = ValidMember.find().where("memberId").equals(memberId);
 
-    console.log(`${memberId}의 현재 메시지 수신여부 ${result[0].isValid}`);
+    console.log(result);
+    console.log(`${memberId}의 현재 메시지 수신여부 `);
 
-    console.log(updateResult);
     console.log(resultMsg);
     callback(resultMsg);
   });

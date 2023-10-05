@@ -24,16 +24,14 @@ async function setAlaram(resJson) {
     .equals(memberId);
   console.log(isMemberExist);
   if (isMemberExist) {
-    const result = await ValidMember.updateOne(
-      { memberId: memberId },
-      { isValid: true }
-    );
-
+    await ValidMember.updateOne({ memberId: memberId }, { isValid: true });
     console.log(`${memberId} 의 알람 켜짐 isValid =true`);
   } else {
     const memberInfo = new ValidMember({ memberId, isValid: true });
     const saveMember = await memberInfo.save();
-    console.log(`savedMember : ${saveMember}`);
+    console.log(
+      `${memberId} 의 알람 켜짐 isValid =true /savedMember : ${saveMember}`
+    );
   }
 
   alarmTimes.forEach((time) => {
