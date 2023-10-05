@@ -23,7 +23,11 @@ async function setAlaram(resJson) {
     .where("memberId")
     .equals(memberId);
   if (isMemberExist) {
-    await ValidMember.updateOne({ memberId: memberId }, { isValid: true });
+    const result = await ValidMember.updateOne(
+      { memberId: memberId },
+      { isValid: true }
+    );
+    console.log(`${memberId} 의 알람 켜짐 isValid = ${result[0].isValid}`);
   } else {
     const memberInfo = new ValidMember({ memberId, isValid: true });
     const saveMember = await memberInfo.save();

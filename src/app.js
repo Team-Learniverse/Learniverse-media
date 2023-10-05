@@ -345,8 +345,12 @@ io.on("connect", (socket) => {
     const memberJob = list[memberId];
     const status = schedule.cancelJob(memberJob);
     const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
-    ValidMember.updateOne({ memberId: memberId }, { isValid: false });
+    const result = ValidMember.updateOne(
+      { memberId: memberId },
+      { isValid: false }
+    );
     console.log(resultMsg);
+    console.log(`${memberId}의 현재 메시지 수신여부 ${result[0].isValid}`);
 
     roomList.get(socket.room_id).removePeer(socket.id);
     roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
@@ -376,7 +380,11 @@ io.on("connect", (socket) => {
     const name = roomList.get(socket.room_id).getPeers().get(socket.id).name;
 
     //exit message 보내주기 && 멤버 상태 업데이트
-    await ValidMember.updateOne({ memberId: name }, { isValid: false });
+    const result = await ValidMember.updateOne(
+      { memberId: name },
+      { isValid: false }
+    );
+    console.log(`${memberId}의 현재 메시지 수신여부 ${result[0].isValid}`);
 
     roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
       room_id: socket.room_id,
@@ -425,6 +433,10 @@ io.on("connect", (socket) => {
       { memberId: memberId },
       { isValid: false }
     );
+    console.log(
+      `${memberId}의 현재 메시지 수신여부 ${updateResult[0].isValid}`
+    );
+
     console.log(updateResult);
     console.log(resultMsg);
     callback(resultMsg);
