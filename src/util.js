@@ -62,9 +62,6 @@ async function sendMessage(resJson) {
     .where("memberId")
     .equals(memberId);
 
-  console.log(memberInfo);
-  console.log(memberInfo[0].isValid);
-  // console.log(member)
   if (!memberInfo[0].isValid) {
     console.log(`${memberId}는 유효하지 않은 사용자입니다.`);
     return;

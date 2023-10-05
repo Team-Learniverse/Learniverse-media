@@ -296,7 +296,7 @@ io.on("connect", (socket) => {
       { consumerTransportId, producerId, producerName, rtpCapabilities },
       callback
     ) => {
-      //TODO null handling
+      //TODO null handfg
       let params = await roomList
         .get(socket.room_id)
         .consume(
@@ -326,6 +326,8 @@ io.on("connect", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    if (!socket.room_id) return;
+
     console.log("Disconnect", {
       name: `${
         roomList.get(socket.room_id) &&
@@ -333,7 +335,19 @@ io.on("connect", (socket) => {
       }`,
     });
 
-    if (!socket.room_id) return;
+    //remove Alarm
+    const memberId = roomList
+      .get(socket.room_id)
+      .getPeers()
+      .get(socket.id).name;
+    var list = schedule.scheduledJobs;
+
+    const memberJob = list[memberId];
+    const status = schedule.cancelJob(memberJob);
+    const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
+    ValidMember.updateOne({ memberId: memberId }, { isValid: false });
+    console.log(resultMsg);
+
     roomList.get(socket.room_id).removePeer(socket.id);
     roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
       room_id: socket.room_id,
@@ -402,6 +416,7 @@ io.on("connect", (socket) => {
   );
 
   socket.on("removeCaptureAlert", async ({ memberId }, callback) => {
+    console.log("removeCaptureAlert");
     var list = schedule.scheduledJobs;
     const memberJob = list[memberId];
     const status = schedule.cancelJob(memberJob);
