@@ -89,6 +89,7 @@ async function sendMessage(resJson) {
       notification: {
         title: "[learniverse] randomCapture",
         body: "현재 코딩중인 화면을 공유해주세요",
+        link: `https://learniverse-front-end.vercel.app/coretime/${roomId}?room_id=${coreTimeId}`,
       },
       to: token,
       webpush: {
