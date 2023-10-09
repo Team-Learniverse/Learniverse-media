@@ -100,55 +100,57 @@ const io = new Server(httpsServer, {
 io.on("connect", (socket) => {
   console.log(`클라이언트 연결 성공 - 소켓ID: ${socket.id}`);
 
-  socket.on("createRoom", async ({ room_id }, callback) => {
-    if (roomList.has(room_id)) {
+  socket.on("createRoom", async ({ coreTimeId }, callback) => {
+    if (roomList.has(coreTimeId)) {
       callback("already exists");
     } else {
-      console.log("Created room", { room_id: room_id });
+      console.log("Created room", { room_id: coreTimeId });
       let worker = await getMediasoupWorker();
-      roomList.set(room_id, new Room(room_id, worker, io));
-      callback(room_id);
+      roomList.set(coreTimeId, new Room(coreTimeId, worker, io));
+      callback(coreTimeId);
     }
   });
 
-  socket.on("join", ({ room_id, name }, callback) => {
+  socket.on("join", ({ coreTimeId, memberId }, callback) => {
     console.log("User joined", {
-      room_id: room_id,
-      name: name,
+      room_id: coreTimeId,
+      memberId: memberId,
     });
 
-    if (!roomList.has(room_id)) {
+    if (!roomList.has(coreTimeId)) {
       return callback({
         error: "Room does not exist",
       });
     }
 
-    roomList.get(room_id).addPeer(new Peer(socket.id, name));
-    socket.room_id = room_id;
-    socket.name = name;
+    roomList.get(coreTimeId).addPeer(new Peer(socket.id, memberId));
+    socket.coreTimeId = coreTimeId;
+    socket.memberId = memberId;
 
     const resJson = {
-      room_id: room_id,
-      peers: roomList.get(socket.room_id).getPeers().values(),
+      coreTimeId: coreTimeId,
+      peers: roomList.get(socket.coreTimeId).getPeers().values(),
     };
     callback(resJson);
   });
 
   socket.on("getProducers", () => {
-    if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.coreTimeId)) return;
     console.log("Get producers", {
-      name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
+      name: `${
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
+      }`,
     });
-    let producerList = roomList.get(socket.room_id).getProducerListForPeer();
+    let producerList = roomList.get(socket.coreTimeId).getProducerListForPeer();
 
     console.log("newProducers", producerList);
     socket.emit("newProducers", producerList);
   });
 
   socket.on("getRoomInfo", (_, callback) => {
-    if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.coreTimeId)) return;
     let producerList = [];
-    const peers = roomList.get(socket.room_id).getPeers();
+    const peers = roomList.get(socket.coreTimeId).getPeers();
 
     peers.forEach((peer) => {
       peer.producers.forEach((producer) => {
@@ -157,25 +159,25 @@ io.on("connect", (socket) => {
         producerList.push({
           producer_id: producer.id,
           producer_type: producerInfo.type,
-          producer_user_id: producerInfo.id,
-          producer_user_name: producerInfo.name,
+          socketId: producerInfo.id,
+          memberId: producerInfo.memberId,
         });
       });
     });
 
     const resJson = {
-      room_id: socket.room_id,
+      room_id: socket.coreTimeId,
       peers: producerList,
-      peerCount: roomList.get(socket.room_id).peers.size,
+      peerCount: roomList.get(socket.coreTimeId).peers.size,
     };
     console.log("getRoomInfo", resJson);
     callback(resJson);
   });
 
   socket.on("getRoomPeerInfo", (_, callback) => {
-    if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.coreTimeId)) return;
     let peerList = [];
-    const peers = roomList.get(socket.room_id).getPeers();
+    const peers = roomList.get(socket.coreTimeId).getPeers();
 
     peers.forEach((peer) => {
       peerList.push({
@@ -189,36 +191,36 @@ io.on("connect", (socket) => {
   });
 
   socket.on("getOriginProducers", () => {
-    if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.coreTimeId)) return;
     console.log("Get producers", {
-      name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
+      name: `${roomList.get(socket.coreTimeId).getPeers().get(socket.id).name}`,
     });
 
     // send all the current producer to newly joined member
-    let producerList = roomList.get(socket.room_id).getProducerListForPeer();
+    let producerList = roomList.get(socket.coreTimeId).getProducerListForPeer();
     socket.emit("existedProducers", producerList);
   });
 
   //채팅
   socket.on("message", (data) => {
-    if (!roomList.has(socket.room_id)) return;
+    if (!roomList.has(socket.coreTimeId)) return;
     console.log("chatting", data);
     const today = new Date();
     data = {
-      name: socket.name,
+      memberId: socket.memberId,
       message: data,
       time: today.toLocaleTimeString("kr", { hour12: false }).slice(0, -3),
     };
-    roomList.get(socket.room_id).broadCast(socket.id, "message", data);
+    roomList.get(socket.coreTimeId).broadCast(socket.id, "message", data);
   });
 
   socket.on("getRouterRtpCapabilities", (_, callback) => {
     console.log("Get RouterRtpCapabilities", {
-      name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
+      name: `${roomList.get(socket.coreTimeId).getPeers().get(socket.id).name}`,
     });
 
     try {
-      callback(roomList.get(socket.room_id).getRtpCapabilities());
+      callback(roomList.get(socket.coreTimeId).getRtpCapabilities());
     } catch (e) {
       callback({
         error: e.message,
@@ -228,12 +230,12 @@ io.on("connect", (socket) => {
 
   socket.on("createWebRtcTransport", async (_, callback) => {
     console.log("Create webrtc transport", {
-      name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
+      name: `${roomList.get(socket.coreTimeId).getPeers().get(socket.id).name}`,
     });
 
     try {
       const { params } = await roomList
-        .get(socket.room_id)
+        .get(socket.coreTimeId)
         .createWebRtcTransport(socket.id);
 
       callback(params);
@@ -249,12 +251,14 @@ io.on("connect", (socket) => {
     "connectTransport",
     async ({ transport_id, dtlsParameters }, callback) => {
       console.log("Connect transport", {
-        name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
+        name: `${
+          roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+        }`,
       });
 
-      if (!roomList.has(socket.room_id)) return;
+      if (!roomList.has(socket.coreTimeId)) return;
       await roomList
-        .get(socket.room_id)
+        .get(socket.coreTimeId)
         .connectPeerTransport(socket.id, transport_id, dtlsParameters);
 
       callback("success");
@@ -264,15 +268,15 @@ io.on("connect", (socket) => {
   socket.on(
     "produce",
     async ({ kind, rtpParameters, producerTransportId }, callback) => {
-      if (!roomList.has(socket.room_id)) {
+      if (!roomList.has(socket.coreTimeId)) {
         return callback({ error: "not is a room" });
       }
 
       let producer_id = await roomList
-        .get(socket.room_id)
+        .get(socket.coreTimeId)
         .produce(
           socket.id,
-          socket.name,
+          socket.memberId,
           producerTransportId,
           rtpParameters,
           kind
@@ -280,7 +284,9 @@ io.on("connect", (socket) => {
 
       console.log("Produce", {
         type: `${kind}`,
-        name: `${roomList.get(socket.room_id).getPeers().get(socket.id).name}`,
+        name: `${
+          roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+        }`,
         id: `${producer_id}`,
       });
 
@@ -298,7 +304,7 @@ io.on("connect", (socket) => {
     ) => {
       //TODO null handfg
       let params = await roomList
-        .get(socket.room_id)
+        .get(socket.coreTimeId)
         .consume(
           socket.id,
           consumerTransportId,
@@ -309,8 +315,8 @@ io.on("connect", (socket) => {
 
       console.log("Consuming", {
         name: `${
-          roomList.get(socket.room_id) &&
-          roomList.get(socket.room_id).getPeers().get(socket.id).name
+          roomList.get(socket.coreTimeId) &&
+          roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
         }`,
         producer_id: `${producerId}`,
         // consumer_id: `${params.id}`,
@@ -326,18 +332,18 @@ io.on("connect", (socket) => {
   });
 
   socket.on("disconnect", async () => {
-    if (!socket.room_id) return;
+    if (!socket.coreTimeId) return;
 
     console.log("Disconnect", {
       name: `${
-        roomList.get(socket.room_id) &&
-        roomList.get(socket.room_id).getPeers().get(socket.id).name
+        roomList.get(socket.coreTimeId) &&
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
       }`,
     });
 
     //remove Alarm
     const memberId = roomList
-      .get(socket.room_id)
+      .get(socket.coreTimeId)
       .getPeers()
       .get(socket.id).name;
     var list = schedule.scheduledJobs;
@@ -350,67 +356,67 @@ io.on("connect", (socket) => {
     console.log(resultMsg);
     console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
 
-    roomList.get(socket.room_id).removePeer(socket.id);
-    roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
-      room_id: socket.room_id,
-      name: socket.name,
+    roomList.get(socket.coreTimeId).removePeer(socket.id);
+    roomList.get(socket.coreTimeId).broadCast(socket.id, "removeMember", {
+      coreTimeId: socket.coreTimeId,
+      memberId: socket.memberId,
     });
   });
 
   socket.on("producerClosed", ({ producer_id }) => {
     console.log("Producer close", {
       name: `${
-        roomList.get(socket.room_id) &&
-        roomList.get(socket.room_id).getPeers().get(socket.id).name
+        roomList.get(socket.coreTimeId) &&
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
       }`,
     });
 
-    roomList.get(socket.room_id).closeProducer(socket.id, producer_id);
+    roomList.get(socket.coreTimeId).closeProducer(socket.id, producer_id);
   });
 
   socket.on("exitRoom", async (_, callback) => {
     console.log("Exit room", {
       name: `${
-        roomList.get(socket.room_id) &&
-        roomList.get(socket.room_id).getPeers().get(socket.id).name
+        roomList.get(socket.coreTimeId) &&
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
       }`,
     });
-    const name = roomList.get(socket.room_id).getPeers().get(socket.id).name;
+    const name = roomList.get(socket.coreTimeId).getPeers().get(socket.id).name;
 
     //exit message 보내주기 && 멤버 상태 업데이트
     await ValidMember.updateOne({ memberId: name }, { isValid: false });
     const memberId = roomList
-      .get(socket.room_id)
+      .get(socket.coreTimeId)
       .getPeers()
       .get(socket.id).name;
     const result = await ValidMember.find().where("memberId").equals(memberId);
     console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
 
-    roomList.get(socket.room_id).broadCast(socket.id, "removeMember", {
-      room_id: socket.room_id,
-      name: socket.name,
+    roomList.get(socket.coreTimeId).broadCast(socket.id, "removeMember", {
+      coreTimeId: socket.coreTimeId,
+      memberId: socket.memberId,
     });
 
-    if (!roomList.has(socket.room_id)) {
+    if (!roomList.has(socket.coreTimeId)) {
       callback({
         error: "not currently in a room",
       });
       return;
     }
     // close transports
-    await roomList.get(socket.room_id).removePeer(socket.id);
-    if (roomList.get(socket.room_id).getPeers().size === 0) {
-      roomList.delete(socket.room_id);
+    await roomList.get(socket.coreTimeId).removePeer(socket.id);
+    if (roomList.get(socket.coreTimeId).getPeers().size === 0) {
+      roomList.delete(socket.coreTimeId);
     }
-    socket.room_id = null;
+    socket.coreTimeId = null;
     callback("successfully exited room");
   });
 
   socket.on("setVideoOff", (_, callback) => {
-    if (!roomList.has(socket.room_id)) return;
-    const data = { room_id: socket.room_id, name: socket.name };
-    console.log("Video off", socket.name);
-    roomList.get(socket.room_id).broadCast(socket.id, "setVideoOff", data);
+    if (!roomList.has(socket.coreTimeId)) return;
+    const data = { coreTimeId: socket.coreTimeId, memberId: socket.memberId };
+    console.log("Video off", socket.memberId);
+    roomList.get(socket.coreTimeId).broadCast(socket.id, "setVideoOff", data);
   });
 
   socket.on(

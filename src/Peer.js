@@ -1,7 +1,7 @@
 class Peer {
   constructor(socket_id, name) {
     this.id = socket_id;
-    this.name = name;
+    this.memberId = memberId;
     this.transports = new Map();
     this.consumers = new Map();
     this.producers = new Map();
@@ -37,14 +37,14 @@ class Peer {
     this.produceTypes.set(producer.id, {
       type: kind,
       id: socket_id,
-      name: socket_name,
+      memberId: socket_name,
     });
 
     producer.on(
       "transportclose",
       function () {
         console.log("Producer transport close", {
-          name: `${this.name}`,
+          memberId: `${this.memberId}`,
           consumer_id: `${producer.id}`,
         });
         producer.close();
@@ -88,7 +88,7 @@ class Peer {
       "transportclose",
       function () {
         console.log("Consumer transport close", {
-          name: `${this.name}`,
+          memberId: `${this.memberId}`,
           consumer_id: `${consumer.id}`,
         });
         this.consumers.delete(consumer.id);
@@ -99,8 +99,8 @@ class Peer {
       consumer,
       params: {
         producerId: producer_id,
-        producerName: producer_name,
-        id: consumer.id,
+        memberId: producer_name,
+        consumerId: consumer.id,
         kind: consumer.kind,
         rtpParameters: consumer.rtpParameters,
         type: consumer.type,
