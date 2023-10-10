@@ -182,7 +182,7 @@ io.on("connect", (socket) => {
     peers.forEach((peer) => {
       peerList.push({
         id: peer.id,
-        name: peer.memberId,
+        memberId: peer.memberId,
       });
     });
 

@@ -1,5 +1,5 @@
 class Peer {
-  constructor(socket_id, name) {
+  constructor(socket_id, memberId) {
     this.id = socket_id;
     this.memberId = memberId;
     this.transports = new Map();
