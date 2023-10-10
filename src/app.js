@@ -207,11 +207,17 @@ io.on("connect", (socket) => {
   socket.on("message", (data) => {
     if (!roomList.has(socket.coreTimeId)) return;
     console.log("chatting", data);
-    const today = new Date();
+    const curr = new Date();
+    console.log("현재시간(Locale) : " + curr + "<br>");
+    const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
+    const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
+    const today = new Date(utc + KR_TIME_DIFF);
+    const time = today.toLocaleTimeString("kr", { hour12: false }).slice(0, -3);
+
     data = {
       memberId: socket.memberId,
       message: data,
-      time: today.toLocaleTimeString("kr", { hour12: false }).slice(0, -3),
+      time: time,
     };
     roomList.get(socket.coreTimeId).broadCast(socket.id, "message", data);
   });
