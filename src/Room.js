@@ -30,8 +30,8 @@ class Room {
         producerList.push({
           producer_id: producer.id,
           producer_type: producerInfo.type,
-          producer_user_id: producerInfo.id,
-          producer_user_name: producerInfo.name,
+          socketId: producerInfo.id,
+          memberId: producerInfo.name,
         });
       });
     });
@@ -119,8 +119,8 @@ class Room {
           {
             producer_id: producer.id,
             producer_type: kind,
-            producer_user_id: socket_id,
-            producer_user_name: socket_name,
+            socketId: socket_id,
+            memberId: socket_name,
           },
         ]);
       }.bind(this)
