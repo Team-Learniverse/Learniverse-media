@@ -1,8 +1,8 @@
 import config from "./config.js";
 
 class Room {
-  constructor(room_id, worker, io) {
-    this.id = room_id;
+  constructor(coreTimeId, worker, io) {
+    this.id = coreTimeId;
     const mediaCodecs = config.mediasoup.router.mediaCodecs;
     worker
       .createRouter({

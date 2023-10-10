@@ -166,7 +166,7 @@ io.on("connect", (socket) => {
     });
 
     const resJson = {
-      room_id: socket.coreTimeId,
+      coreTimeId: socket.coreTimeId,
       peers: producerList,
       peerCount: roomList.get(socket.coreTimeId).peers.size,
     };
@@ -182,7 +182,7 @@ io.on("connect", (socket) => {
     peers.forEach((peer) => {
       peerList.push({
         id: peer.id,
-        name: peer.name,
+        name: peer.memberId,
       });
     });
 
@@ -193,7 +193,9 @@ io.on("connect", (socket) => {
   socket.on("getOriginProducers", () => {
     if (!roomList.has(socket.coreTimeId)) return;
     console.log("Get producers", {
-      name: `${roomList.get(socket.coreTimeId).getPeers().get(socket.id).name}`,
+      name: `${
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
+      }`,
     });
 
     // send all the current producer to newly joined member
@@ -216,7 +218,9 @@ io.on("connect", (socket) => {
 
   socket.on("getRouterRtpCapabilities", (_, callback) => {
     console.log("Get RouterRtpCapabilities", {
-      name: `${roomList.get(socket.coreTimeId).getPeers().get(socket.id).name}`,
+      name: `${
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
+      }`,
     });
 
     try {
@@ -230,7 +234,9 @@ io.on("connect", (socket) => {
 
   socket.on("createWebRtcTransport", async (_, callback) => {
     console.log("Create webrtc transport", {
-      name: `${roomList.get(socket.coreTimeId).getPeers().get(socket.id).name}`,
+      name: `${
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
+      }`,
     });
 
     try {
@@ -252,7 +258,7 @@ io.on("connect", (socket) => {
     async ({ transport_id, dtlsParameters }, callback) => {
       console.log("Connect transport", {
         name: `${
-          roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+          roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
         }`,
       });
 
@@ -285,7 +291,7 @@ io.on("connect", (socket) => {
       console.log("Produce", {
         type: `${kind}`,
         name: `${
-          roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+          roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
         }`,
         id: `${producer_id}`,
       });
@@ -316,7 +322,7 @@ io.on("connect", (socket) => {
       console.log("Consuming", {
         name: `${
           roomList.get(socket.coreTimeId) &&
-          roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+          roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
         }`,
         producer_id: `${producerId}`,
         // consumer_id: `${params.id}`,
@@ -337,7 +343,7 @@ io.on("connect", (socket) => {
     console.log("Disconnect", {
       name: `${
         roomList.get(socket.coreTimeId) &&
-        roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
       }`,
     });
 
@@ -345,7 +351,7 @@ io.on("connect", (socket) => {
     const memberId = roomList
       .get(socket.coreTimeId)
       .getPeers()
-      .get(socket.id).name;
+      .get(socket.id).memberId;
     var list = schedule.scheduledJobs;
 
     const memberJob = list[memberId.toString()];
@@ -367,7 +373,7 @@ io.on("connect", (socket) => {
     console.log("Producer close", {
       name: `${
         roomList.get(socket.coreTimeId) &&
-        roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
       }`,
     });
 
@@ -378,17 +384,20 @@ io.on("connect", (socket) => {
     console.log("Exit room", {
       name: `${
         roomList.get(socket.coreTimeId) &&
-        roomList.get(socket.coreTimeId).getPeers().get(socket.id).name
+        roomList.get(socket.coreTimeId).getPeers().get(socket.id).memberId
       }`,
     });
-    const name = roomList.get(socket.coreTimeId).getPeers().get(socket.id).name;
+    const name = roomList
+      .get(socket.coreTimeId)
+      .getPeers()
+      .get(socket.id).memberId;
 
     //exit message 보내주기 && 멤버 상태 업데이트
     await ValidMember.updateOne({ memberId: name }, { isValid: false });
     const memberId = roomList
       .get(socket.coreTimeId)
       .getPeers()
-      .get(socket.id).name;
+      .get(socket.id).memberId;
     const result = await ValidMember.find().where("memberId").equals(memberId);
     console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
 
