@@ -13,7 +13,6 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import * as utilService from "./util.js";
 import schedule from "node-schedule";
-import cricularJson from "circular-json";
 import ValidMember from "./models/validMember.js";
 
 const options = {
@@ -36,10 +35,11 @@ app.get("/getKorTime", (req, res) => {
   console.log("현재시간(Locale) : " + curr + "<br>");
   const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
   const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
-  const kr_curr = new Date(utc + KR_TIME_DIFF);
+  const today = new Date(utc + KR_TIME_DIFF);
+  const time = today.toLocaleTimeString("kr", { hour12: false }).slice(0, -3);
 
-  console.log("한국시간 : " + kr_curr);
-  res.send(kr_curr);
+  console.log("한국시간 : " + time);
+  res.send(time);
 });
 app.get("/getServerTime", (req, res) => {
   const curr = new Date();
@@ -111,11 +111,14 @@ io.on("connect", (socket) => {
     }
   });
 
-  socket.on("join", ({ coreTimeId, memberId }, callback) => {
+  socket.on("join", async ({ coreTimeId, memberId }, callback) => {
     console.log("User joined", {
       room_id: coreTimeId,
       memberId: memberId,
     });
+
+    //조인할때 보내기
+    utilService.sendMoonRequest(memberId);
 
     if (!roomList.has(coreTimeId)) {
       return callback({
@@ -208,11 +211,12 @@ io.on("connect", (socket) => {
     if (!roomList.has(socket.coreTimeId)) return;
     console.log("chatting", data);
     const curr = new Date();
-    console.log("현재시간(Locale) : " + curr + "<br>");
+
     const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
     const KR_TIME_DIFF = 9 * 60 * 60 * 1000;
     const today = new Date(utc + KR_TIME_DIFF);
     const time = today.toLocaleTimeString("kr", { hour12: false }).slice(0, -3);
+    console.log("현재시간(Locale) : " + time + "<br>");
 
     data = {
       memberId: socket.memberId,

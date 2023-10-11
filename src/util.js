@@ -108,4 +108,23 @@ async function sendMessage(resJson) {
   }
 }
 
-export { setAlaram, sendMessage };
+async function sendMoonRequest(memberId) {
+  const requestUrl = "https://learniverse-main.kro.kr/member/moon/add/core";
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: config.serverKey,
+  };
+  let data = {
+    memberId: memberId,
+    moonDate: new Date(),
+  };
+  try {
+    const response = await axios.post(requestUrl, data, { headers });
+    console.log("응답 데이터:", response.data);
+  } catch (error) {
+    // 오류가 발생했을 때의 처리
+    console.error("POST 요청 중 오류 발생:", error);
+  }
+}
+
+export { setAlaram, sendMessage, sendMoonRequest };

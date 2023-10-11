@@ -123,7 +123,7 @@ const S3Controller = {
     }
   },
   async createCaptureTime(req, res) {
-    //이미지 정보 생성
+    //캡처 시간 생성
     try {
       let { coreTimeId, startTime, endTime, captureCount } = req.body;
       startTime = new Date(startTime);
@@ -143,13 +143,13 @@ const S3Controller = {
         "\n"
       );
 
-      for (let i = 0; i < captureCount; i++) {
+      for (let i = 0; i <= captureCount; i++) {
         lastTime = new Date(lastTime.getTime() + timeDiff);
         const createdCatpure = new CaptureTime({
           coreTimeId,
           captureTime: lastTime,
         });
-        if (i != captureCount - 1) {
+        if (i != captureCount) {
           //endTime 제외하고
           const savedTime = await createdCatpure.save();
           times.push(savedTime);
