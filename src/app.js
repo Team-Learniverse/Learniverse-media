@@ -435,7 +435,6 @@ io.on("connect", (socket) => {
       .equals(name);
     if (isExistedMember) {
       const memberInfo = await ActiveMember.remove({ memberId: name });
-      await memberInfo.save();
       console.log(`${name} activeList에서 삭제`);
     }
 
