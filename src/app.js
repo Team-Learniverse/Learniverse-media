@@ -136,9 +136,7 @@ io.on("connect", (socket) => {
     if (isExistedMember) {
       console.log(`${memberId} 이미 다른 코어타임에 존재함`);
       console.log(isExistedMember);
-      res
-        .status(400)
-        .json({ error: `${memberId} 이미 다른 코어타임에 존재함` });
+      callback({ error: `${memberId} 이미 다른 코어타임에 존재함` });
     } else {
       const memberInfo = new ActiveMember({ memberId, coreTimeId });
       await memberInfo.save();
