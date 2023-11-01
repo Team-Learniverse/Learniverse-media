@@ -14,6 +14,7 @@ import bodyParser from "body-parser";
 import * as utilService from "./util.js";
 import schedule from "node-schedule";
 import ValidMember from "./models/validMember.js";
+import ActiveMember from "./models/activeMember.js";
 
 const options = {
   key: fs.readFileSync("ssl/key.pem"),
@@ -126,6 +127,23 @@ io.on("connect", (socket) => {
       });
     }
 
+    //현재 이미 active한 멤버인지 조회
+    const isExistedMember = await ActiveMember.findOne()
+      .where("memberId")
+      .equals(memberId);
+    console.log(isExistedMember);
+
+    if (isExistedMember) {
+      console.log(`${memberId} 이미 다른 코어타임에 존재함`);
+      console.log(isExistedMember);
+      return { error: `${memberId} 이미 다른 코어타임에 존재함` };
+    } else {
+      const memberInfo = new ActiveMember({ memberId, coreTimeId });
+      await memberInfo.save();
+      console.log(`${memberId} 코어타입 입장/ 코어타임 id: ${coreTimeId}`);
+    }
+
+    //그냥 룸id
     roomList.get(coreTimeId).addPeer(new Peer(socket.id, memberId));
     socket.coreTimeId = coreTimeId;
     socket.memberId = memberId;
@@ -372,6 +390,16 @@ io.on("connect", (socket) => {
     console.log(resultMsg);
     console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
 
+    //active에서 제외
+    const isExistedMember = await ActiveMember.findOne()
+      .where("memberId")
+      .equals(memberId);
+    if (isExistedMember) {
+      const memberInfo = await ActiveMember.remove({ memberId: memberId });
+      await memberInfo.save();
+      console.log(`${memberId} activeList에서 삭제`);
+    }
+
     roomList.get(socket.coreTimeId).removePeer(socket.id);
     roomList.get(socket.coreTimeId).broadCast(socket.id, "removeMember", {
       coreTimeId: socket.coreTimeId,
@@ -401,6 +429,16 @@ io.on("connect", (socket) => {
       .get(socket.coreTimeId)
       .getPeers()
       .get(socket.id).memberId;
+
+    //active에서 제외
+    const isExistedMember = await ActiveMember.findOne()
+      .where("memberId")
+      .equals(name);
+    if (isExistedMember) {
+      const memberInfo = await ActiveMember.remove({ memberId: name });
+      await memberInfo.save();
+      console.log(`${name} activeList에서 삭제`);
+    }
 
     //exit message 보내주기 && 멤버 상태 업데이트
     await ValidMember.updateOne({ memberId: name }, { isValid: false });
