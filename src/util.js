@@ -2,7 +2,7 @@ import express from "express";
 const app = express();
 import config from "./config.js";
 import CaptureTime from "./models/captureTime.js";
-import ValidMember from "./models/validMember.js";
+import ActiveMember from "./models/activeMember.js";
 import axios from "axios";
 import schedule from "node-schedule";
 
@@ -19,19 +19,13 @@ async function setAlaram(resJson) {
     alarmTimes.push(coreTime.captureTime);
   }
 
-  const isMemberExist = await ValidMember.findOne()
+  const isMemberExist = await ActiveMember.findOne()
     .where("memberId")
     .equals(memberId);
   console.log(isMemberExist);
   if (isMemberExist) {
-    await ValidMember.updateOne({ memberId: memberId }, { isValid: true });
-    console.log(`${memberId} 의 알람 켜짐 isValid =true`);
-  } else {
-    const memberInfo = new ValidMember({ memberId, isValid: true });
-    const saveMember = await memberInfo.save();
-    console.log(
-      `${memberId} 의 알람 켜짐 isValid =true /savedMember : ${saveMember}`
-    );
+    // 현재 참여 중인 유저라면 알림 넣어주기
+    console.log(`${isMemberExist} 의 알람 켜짐 active =true`);
   }
 
   alarmTimes.forEach((time) => {
@@ -62,12 +56,15 @@ async function setAlaram(resJson) {
 
 async function sendMessage(resJson) {
   let { token, coreTimeId, roomId, memberId } = resJson;
-  const memberInfo = await ValidMember.find()
+  const memberInfo = await ActiveMember.find()
     .where("memberId")
     .equals(memberId);
 
-  if (!memberInfo[0].isValid) {
-    console.log(`${memberId}는 유효하지 않은 사용자입니다.`);
+  const actCoreTimeId = memberInfo[0].coreTimeId; //현재 해당 멤버가 활성화되어있는 코어타임
+  if (actCoreTimeId != coreTimeId) {
+    console.log(
+      `${memberId}는 유효하지 않은 사용자입니다.\n입장 중인 ${coreTimeId}과 활성화 된 ${actCoreTimeId}의 값이 다릅니다.`
+    );
     return;
   } else {
     console.log(`알림: ${new Date()}에 알림을 보냅니다.\n`);

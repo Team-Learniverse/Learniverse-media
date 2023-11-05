@@ -13,7 +13,6 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import * as utilService from "./util.js";
 import schedule from "node-schedule";
-import ValidMember from "./models/validMember.js";
 import ActiveMember from "./models/activeMember.js";
 
 const options = {
@@ -385,9 +384,6 @@ io.on("connect", (socket) => {
     const memberJob = list[memberId.toString()];
     const status = schedule.cancelJob(memberJob);
     const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
-    await ValidMember.updateOne({ memberId: memberId }, { isValid: false });
-    const result = await ValidMember.find().where("memberId").equals(memberId);
-    console.log(resultMsg);
     console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
 
     //active에서 제외
@@ -439,13 +435,12 @@ io.on("connect", (socket) => {
     }
 
     //exit message 보내주기 && 멤버 상태 업데이트
-    await ValidMember.updateOne({ memberId: name }, { isValid: false });
     const memberId = roomList
       .get(socket.coreTimeId)
       .getPeers()
       .get(socket.id).memberId;
-    const result = await ValidMember.find().where("memberId").equals(memberId);
-    console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
+
+    console.log(`${memberId} 방에서 나감`);
 
     roomList.get(socket.coreTimeId).broadCast(socket.id, "removeMember", {
       coreTimeId: socket.coreTimeId,
@@ -490,11 +485,6 @@ io.on("connect", (socket) => {
     const memberJob = list[memberId.toString()];
     const status = schedule.cancelJob(memberJob);
     const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
-    await ValidMember.updateOne({ memberId: memberId }, { isValid: false });
-    const result = ValidMember.find().where("memberId").equals(memberId);
-
-    console.log(result);
-    console.log(`${memberId}의 현재 메시지 수신여부 `);
 
     console.log(resultMsg);
     callback(resultMsg);
