@@ -19,10 +19,11 @@ async function setAlaram(resJson) {
     alarmTimes.push(coreTime.captureTime);
   }
 
-  const isMemberExist = await ActiveMember.findOne()
+  const isMemberExist = await ActiveMember.find()
     .where("memberId")
     .equals(memberId);
   console.log(isMemberExist);
+
   if (isMemberExist) {
     // 현재 참여 중인 유저라면 알림 넣어주기
     console.log(`${isMemberExist} 의 알람 켜짐 active =true`);
