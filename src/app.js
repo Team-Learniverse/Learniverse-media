@@ -384,7 +384,7 @@ io.on("connect", (socket) => {
     const memberJob = list[memberId.toString()];
     const status = schedule.cancelJob(memberJob);
     const resultMsg = `${memberId} job의 삭제여부 = ${status}`;
-    console.log(`${memberId}의 현재 메시지 수신여부 ${result}`);
+    console.log(resultMsg);
 
     //active에서 제외
     const isExistedMember = await ActiveMember.findOne()
@@ -393,6 +393,9 @@ io.on("connect", (socket) => {
     if (isExistedMember) {
       await ActiveMember.remove({ memberId: memberId });
       console.log(`${memberId} activeList에서 삭제`);
+
+      const tempResult = await ActiveMember.find();
+      console.log(tempResult);
     }
 
     roomList.get(socket.coreTimeId).removePeer(socket.id);
@@ -431,7 +434,7 @@ io.on("connect", (socket) => {
       .equals(name);
     if (isExistedMember) {
       const memberInfo = await ActiveMember.remove({ memberId: name });
-      console.log(`${name} activeList에서 삭제`);
+      console.log(`${memberInfo} activeList에서 삭제`);
     }
 
     //exit message 보내주기 && 멤버 상태 업데이트
