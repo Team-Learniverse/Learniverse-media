@@ -481,6 +481,8 @@ io.on("connect", (socket) => {
       const params = { memberId, roomId, coreTimeId, token };
       console.log("코어타임 생성", params);
       const coreTimes = await utilService.setAlaram(params);
+      if (coreTimes == False)
+        callback({ error: "현재 activeList에 존재하지 않는 멤버 id" });
       callback(coreTimes);
     }
   );

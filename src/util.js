@@ -26,7 +26,7 @@ async function setAlaram(resJson) {
   if (isMemberExist) {
     // 현재 참여 중인 유저라면 알림 넣어주기
     console.log(`${isMemberExist} 의 알람 켜짐 active =true`);
-  }
+  } else return False;
 
   alarmTimes.forEach((time) => {
     const targetDateTime = new Date(time);
