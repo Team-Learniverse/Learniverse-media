@@ -435,6 +435,9 @@ io.on("connect", (socket) => {
     if (isExistedMember) {
       const memberInfo = await ActiveMember.remove({ memberId: name });
       console.log(`${memberInfo} activeList에서 삭제`);
+
+      const tempResult = await ActiveMember.find();
+      console.log(tempResult);
     }
 
     //exit message 보내주기 && 멤버 상태 업데이트
