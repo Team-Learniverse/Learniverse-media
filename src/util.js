@@ -57,10 +57,15 @@ async function setAlaram(resJson) {
 
 async function sendMessage(resJson) {
   let { token, coreTimeId, roomId, memberId } = resJson;
+
   const memberInfo = await ActiveMember.find()
     .where("memberId")
     .equals(memberId);
 
+  if (!memberInfo) {
+    console.log(`${memberId}는 현재 active하지 않습니다.`);
+    return;
+  }
   const actCoreTimeId = memberInfo[0].coreTimeId; //현재 해당 멤버가 활성화되어있는 코어타임
   if (actCoreTimeId != coreTimeId) {
     console.log(
