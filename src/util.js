@@ -21,7 +21,7 @@ async function setAlaram(resJson) {
 
   if (isScheduled) {
     console.log("이미 스케줄링돼서 return함 " + memberId + " " + coreTimeId);
-    return False;
+    return false;
   } else {
     const forSchedule = new forScheduler({ memberId, coreTimeId });
     await forSchedule.save();
