@@ -19,8 +19,7 @@ async function setAlaram(resJson) {
   });
   console.log(isScheduled);
 
-  if (isScheduled) {
-    console.log();
+  if (isScheduled.length != 0) {
     console.log("이미 스케줄링돼서 return함 " + memberId + " " + coreTimeId);
     return false;
   } else {
