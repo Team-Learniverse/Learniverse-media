@@ -13,13 +13,14 @@ async function setAlaram(resJson) {
   console.log(coreTimeId, new Date());
 
   //이미 스케줄링 됐으면 걍 리턴하고, 아니면 스케줄링 다시해주기
-  const isScheduled = await forScheduler
-    .find()
-    .where("memberId")
-    .equals(memberId);
+  const isScheduled = await forScheduler.find({
+    memberId: memberId,
+    coreTimeId: coreTimeId,
+  });
   console.log(isScheduled);
 
-  if (isScheduled != []) {
+  if (isScheduled) {
+    console.log();
     console.log("이미 스케줄링돼서 return함 " + memberId + " " + coreTimeId);
     return false;
   } else {
