@@ -5,11 +5,28 @@ import CaptureTime from "./models/captureTime.js";
 import ActiveMember from "./models/activeMember.js";
 import axios from "axios";
 import schedule from "node-schedule";
+import forScheduler from "./models/forScheduler.js";
 
 async function setAlaram(resJson) {
   // 스케줄러 호출
   const { memberId, roomId, coreTimeId, token } = resJson;
   console.log(coreTimeId, new Date());
+
+  //이미 스케줄링 됐으면 걍 리턴하고, 아니면 스케줄링 다시해주기
+  const isScheduled = await forScheduler
+    .find()
+    .where("memberId")
+    .equals(memberId);
+  console.log(isScheduled);
+
+  if (isScheduled) {
+    console.log("이미 스케줄링돼서 return함 " + memberId + " " + coreTimeId);
+    return False;
+  } else {
+    const forSchedule = new forScheduler({ memberId, coreTimeId });
+    await forSchedule.save();
+  }
+
   const coreTimes = await CaptureTime.find()
     .where("coreTimeId")
     .equals(coreTimeId);
