@@ -19,7 +19,7 @@ async function setAlaram(resJson) {
     .equals(memberId);
   console.log(isScheduled);
 
-  if (isScheduled) {
+  if (isScheduled != []) {
     console.log("이미 스케줄링돼서 return함 " + memberId + " " + coreTimeId);
     return false;
   } else {
